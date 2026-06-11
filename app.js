@@ -811,7 +811,7 @@ function openReservationScreen() {
   }
   selectedReservationHour = null;
   reservationConfirmation.hidden = true;
-  setLineSendStatus("LINEメッセージを準備中");
+  setLineSendStatus("LINEリッチメッセージを準備中");
   reservationScreen.hidden = false;
   document.body.classList.add("reservation-open");
   renderMeasurementRecords();

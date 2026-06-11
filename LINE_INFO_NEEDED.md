@@ -12,7 +12,7 @@
 - LINE DevelopersのProvider / Channel
 - LIFFアプリのEndpoint URL
 - LIFF ID
-- LIFFのメッセージ送信用スコープ、または予約APIからMessaging APIで送信する方針
+- LIFFのメッセージ送信用スコープ（chat_message.write）、または予約APIからMessaging APIでFlex Messageを送信する方針
 - リッチメニュー各ボタンの遷移先URL
 - Messaging APIで設定する場合はチャネルアクセストークン
 - 採寸予約APIの公開URL

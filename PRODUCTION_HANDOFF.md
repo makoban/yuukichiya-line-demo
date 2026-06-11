@@ -9,7 +9,7 @@
 - 採寸予約画面
 - 1時間単位の空き枠選択
 - 予約済み枠の選択不可表示
-- 予約確定後のLINE確認文送信処理
+- 予約確定後のLINE Flex Messageリッチメッセージ送信処理
 - gpt-image2生成アイコン12種
 - LINEリッチメニュー画像
 - Messaging API用リッチメニュー投入スクリプト
@@ -31,7 +31,7 @@
 - 予約確定はDBトランザクション内で作成する
 - 既に埋まっている枠はHTTP 409で返す
 - LIFFのID tokenまたはaccess tokenをサーバーで検証してLINEユーザーを確定する
-- 予約作成後、Messaging APIで利用者へ確認メッセージを送る
+- 予約作成後、Messaging APIで利用者へFlex Messageの確認リッチメッセージを送る
 
 予約APIの最小レスポンス例:
 

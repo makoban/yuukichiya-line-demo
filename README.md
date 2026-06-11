@@ -27,10 +27,10 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
-- 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE確認文として送信
-- 通常ブラウザでは確認文をコピーし、LIFFまたは予約API接続後にLINE送信
+- 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE Flex Messageのリッチメッセージとして送信
+- 通常ブラウザでは確認文をコピーし、LIFFのメッセージ送信権限または予約API接続後にLINE送信
 
-静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に予約APIを設定し、DB側で `date + store + hour` を一意制約にして二重予約を防ぎます。
+静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に予約APIを設定し、DB側で `date + store + hour` を一意制約にして二重予約を防ぎます。LINEへ確実に届く通知にする場合は、予約API側からMessaging APIでFlex Messageを送信します。
 
 ## LINE接続
 
