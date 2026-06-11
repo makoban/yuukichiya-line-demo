@@ -5,7 +5,7 @@ window.YUUKICHIYA_LINE_CONFIG = {
   pointsPageUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=points",
   staffPageUrl: "https://makoban.github.io/yuukichiya-line-demo/staff.html",
   measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC",
-  reservationApiUrl: "",
+  reservationApiUrl: "https://yuukichiya-reservation-api.ai-fudosan.workers.dev/reservations",
   reservationStores: ["本店", "高橋店"],
   reservationStartHour: 10,
   reservationEndHour: 18,

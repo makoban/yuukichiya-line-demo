@@ -97,7 +97,19 @@ async function createReservation(request, env, cors) {
     return jsonResponse({ message: validationError }, 400, cors);
   }
 
+  if (!env.LINE_CHANNEL_ACCESS_TOKEN) {
+    return jsonResponse({ message: "LINE送信用トークンが設定されていません" }, 500, cors);
+  }
+
   const lineUserId = await resolveLineUserId(payload, env);
+  if (!lineUserId) {
+    return jsonResponse(
+      { message: "LINEログイン情報を確認できませんでした。LINEアプリのリッチメニューから予約画面を開き直してください。" },
+      401,
+      cors,
+    );
+  }
+
   const storedReservation = {
     ...reservation,
     lineUserId,
@@ -134,11 +146,32 @@ async function createReservation(request, env, cors) {
   }
 
   const lineResult = await pushReservationMessage(env, storedReservation);
+  if (!lineResult.sent) {
+    await deleteReservation(env, storedReservation.id);
+    return jsonResponse(
+      {
+        message:
+          "LINE通知を送れなかったため予約を確定していません。勇吉屋公式アカウントを友だち追加した状態で、LINE内の予約画面からもう一度お試しください。",
+        lineMessageError: lineResult.error || null,
+      },
+      502,
+      cors,
+    );
+  }
+
+  console.log("reservation confirmed and line push sent", {
+    id: storedReservation.id,
+    date: storedReservation.date,
+    store: storedReservation.store,
+    hour: storedReservation.hour,
+    hasLineUserId: Boolean(storedReservation.lineUserId),
+  });
+
   return jsonResponse(
     {
       reservation: publicReservation(storedReservation),
-      lineMessageSent: lineResult.sent,
-      lineMessageError: lineResult.error || null,
+      lineMessageSent: true,
+      lineMessageError: null,
     },
     201,
     cors,
@@ -148,6 +181,14 @@ async function createReservation(request, env, cors) {
 function assertDatabase(env) {
   if (!env.DB) {
     throw new Error("D1 database binding DB is required.");
+  }
+}
+
+async function deleteReservation(env, id) {
+  try {
+    await env.DB.prepare("DELETE FROM reservations WHERE id = ?").bind(id).run();
+  } catch (error) {
+    console.error("reservation rollback failed", error);
   }
 }
 
