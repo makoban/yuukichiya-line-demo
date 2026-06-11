@@ -14,6 +14,14 @@ const avatarFiles = [
   "avatar-10-owl.png",
   "avatar-11-fox.png",
   "avatar-12-mascot.png",
+  "avatar-13-adult-woman-short.png",
+  "avatar-14-adult-man-glasses.png",
+  "avatar-15-adult-woman-bob.png",
+  "avatar-16-adult-man-suit.png",
+  "avatar-17-child-girl-elementary.png",
+  "avatar-18-child-boy-hoodie.png",
+  "avatar-19-child-girl-junior.png",
+  "avatar-20-child-boy-junior.png",
 ];
 
 const initialMembers = [
@@ -24,6 +32,7 @@ const initialMembers = [
     role: "代表者",
     gender: "女性",
     school: "",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-04-guardian.png",
   },
@@ -34,6 +43,7 @@ const initialMembers = [
     role: "生徒",
     gender: "女性",
     school: "豊田市立さくら中学校",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-01-student-girl.png",
   },
@@ -44,6 +54,7 @@ const initialMembers = [
     role: "生徒",
     gender: "男性",
     school: "豊田市立みどり小学校",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-02-student-boy.png",
   },
@@ -165,6 +176,7 @@ const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const genderInput = document.getElementById("genderInput");
 const schoolInput = document.getElementById("schoolInput");
+const phoneInput = document.getElementById("phoneInput");
 const addressInput = document.getElementById("addressInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
@@ -349,6 +361,7 @@ function renderEditor() {
   birthdayInput.value = member.birthday;
   genderInput.value = member.gender || "未回答";
   schoolInput.value = member.school;
+  phoneInput.value = member.phone || "";
   addressInput.value = member.address || "";
 }
 
@@ -1350,6 +1363,7 @@ nameInput.addEventListener("input", (event) => updateSelected("name", event.targ
 birthdayInput.addEventListener("input", (event) => updateSelected("birthday", event.target.value));
 genderInput.addEventListener("change", (event) => updateSelected("gender", event.target.value));
 schoolInput.addEventListener("input", (event) => updateSelected("school", event.target.value));
+phoneInput.addEventListener("input", (event) => updateSelected("phone", event.target.value));
 addressInput.addEventListener("input", (event) => updateSelected("address", event.target.value));
 
 photoInput.addEventListener("change", (event) => {
@@ -1374,6 +1388,7 @@ addMemberButton.addEventListener("click", () => {
     role: "生徒",
     gender: "未回答",
     school: "学校名を入力",
+    phone: members[0].phone || "",
     address: members[0].address || "",
     avatar: `./assets/avatars/${avatarFiles[(nextIndex + 4) % avatarFiles.length]}`,
   };
