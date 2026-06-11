@@ -212,7 +212,7 @@ const slotGrid = document.getElementById("slotGrid");
 const slotSummaryText = document.getElementById("slotSummaryText");
 const confirmReservationButton = document.getElementById("confirmReservationButton");
 const reservationConfirmation = document.getElementById("reservationConfirmation");
-const reservationLatestKicker = document.getElementById("reservationLatestKicker");
+const reservationResultKicker = document.getElementById("reservationResultKicker");
 const reservationConfirmedTime = document.getElementById("reservationConfirmedTime");
 const reservationConfirmationDetails = document.getElementById("reservationConfirmationDetails");
 const lineSendStatus = document.getElementById("lineSendStatus");
@@ -811,15 +811,30 @@ function measurementValuesText(record, limit = 3) {
 }
 
 function renderMeasurementRecords() {
-  if (!measurementLatestList || !measurementHistoryList) return;
-
-  measurementLatestList.innerHTML = members
-    .map((member, index) => {
-      const record = latestMeasurementForMember(member.id);
-      const kind = memberKindLabel(member, index);
-      if (!record) {
+  if (measurementLatestList) {
+    measurementLatestList.innerHTML = members
+      .map((member, index) => {
+        const record = latestMeasurementForMember(member.id);
+        const kind = memberKindLabel(member, index);
+        if (!record) {
+          return `
+            <article class="measurement-latest-item is-empty">
+              <div class="measurement-member-row">
+                <span class="measurement-person-row">
+                  <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
+                  <span class="measurement-person-copy">
+                    <strong>${escapeHtml(member.name)}</strong>
+                    <span>${escapeHtml(kind)}</span>
+                  </span>
+                </span>
+              </div>
+              <p>まだ採寸記録がありません</p>
+            </article>
+          `;
+        }
+        const itemKind = measurementItemKind(record.item);
         return `
-          <article class="measurement-latest-item is-empty">
+          <article class="measurement-latest-item">
             <div class="measurement-member-row">
               <span class="measurement-person-row">
                 <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
@@ -828,80 +843,67 @@ function renderMeasurementRecords() {
                   <span>${escapeHtml(kind)}</span>
                 </span>
               </span>
-            </div>
-            <p>まだ採寸記録がありません</p>
-          </article>
-        `;
-      }
-      const itemKind = measurementItemKind(record.item);
-      return `
-        <article class="measurement-latest-item">
-          <div class="measurement-member-row">
-            <span class="measurement-person-row">
-              <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
-              <span class="measurement-person-copy">
-                <strong>${escapeHtml(member.name)}</strong>
-                <span>${escapeHtml(kind)}</span>
-              </span>
-            </span>
-            <span class="measurement-item-chip">
-              <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
-              ${escapeHtml(itemKind.label)}
-            </span>
-          </div>
-          <dl class="measurement-latest-meta">
-            <div>
-              <dt>いつ</dt>
-              <dd>${escapeHtml(formatMeasurementDate(record.measuredAt))}</dd>
-            </div>
-            <div>
-              <dt>何を</dt>
-              <dd>
-                <span class="measurement-item-inline">
-                  <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
-                  ${escapeHtml(record.item)}
-                </span>
-              </dd>
-            </div>
-          </dl>
-          <p>${escapeHtml(measurementValuesText(record))}</p>
-          <span class="measurement-staff">入力 ${escapeHtml(record.staff)}</span>
-        </article>
-      `;
-    })
-    .join("");
-
-  measurementHistoryList.innerHTML = sortMeasurementRecords(measurementRecords)
-    .map((record) => {
-      const itemKind = measurementItemKind(record.item);
-      return `
-        <div class="measurement-history-item">
-          <span class="measurement-history-clothing" aria-label="${escapeHtml(itemKind.label)}">
-            ${escapeHtml(itemKind.icon)}
-          </span>
-          <div class="measurement-history-main">
-            <div class="measurement-history-title">
-              <strong>${escapeHtml(record.item)}</strong>
               <span class="measurement-item-chip">
                 <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
                 ${escapeHtml(itemKind.label)}
               </span>
             </div>
-            <div class="measurement-history-meta">
-              <span class="measurement-history-person">
-                <img src="${escapeHtml(measurementMemberAvatar(record.memberId))}" alt="${escapeHtml(measurementMemberName(record.memberId))}のアイコン" />
-                <span>${escapeHtml(measurementMemberName(record.memberId))}</span>
-              </span>
-              <span class="measurement-history-date">${escapeHtml(formatMeasurementDate(record.measuredAt))}</span>
-              <span class="measurement-history-staff">${escapeHtml(record.staff)}</span>
-              <span class="measurement-history-kind">${escapeHtml(measurementMemberKind(record.memberId))}</span>
+            <dl class="measurement-latest-meta">
+              <div>
+                <dt>いつ</dt>
+                <dd>${escapeHtml(formatMeasurementDate(record.measuredAt))}</dd>
+              </div>
+              <div>
+                <dt>何を</dt>
+                <dd>
+                  <span class="measurement-item-inline">
+                    <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+                    ${escapeHtml(record.item)}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+            <p>${escapeHtml(measurementValuesText(record))}</p>
+            <span class="measurement-staff">入力 ${escapeHtml(record.staff)}</span>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  if (measurementHistoryList) {
+    measurementHistoryList.innerHTML = sortMeasurementRecords(measurementRecords)
+      .map((record) => {
+        const itemKind = measurementItemKind(record.item);
+        return `
+          <div class="measurement-history-item">
+            <span class="measurement-history-clothing" aria-label="${escapeHtml(itemKind.label)}">
+              ${escapeHtml(itemKind.icon)}
+            </span>
+            <div class="measurement-history-main">
+              <div class="measurement-history-title">
+                <strong>${escapeHtml(record.item)}</strong>
+                <span class="measurement-item-chip">
+                  <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+                  ${escapeHtml(itemKind.label)}
+                </span>
+              </div>
+              <div class="measurement-history-meta">
+                <span class="measurement-history-person">
+                  <img src="${escapeHtml(measurementMemberAvatar(record.memberId))}" alt="${escapeHtml(measurementMemberName(record.memberId))}のアイコン" />
+                  <span>${escapeHtml(measurementMemberName(record.memberId))}</span>
+                </span>
+                <span class="measurement-history-date">${escapeHtml(formatMeasurementDate(record.measuredAt))}</span>
+                <span class="measurement-history-staff">${escapeHtml(record.staff)}</span>
+                <span class="measurement-history-kind">${escapeHtml(measurementMemberKind(record.memberId))}</span>
+              </div>
+              <small>${escapeHtml(measurementValuesText(record, 4))}</small>
             </div>
-            <small>${escapeHtml(measurementValuesText(record, 4))}</small>
           </div>
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
+  }
 }
 
 function toDateInputValue(date) {
@@ -1224,7 +1226,7 @@ async function cancelReservation(reservationId) {
   } catch (error) {
     console.warn("Reservation cancel failed", error);
     myReservationsMessage = error.message || "予約をキャンセルできませんでした";
-    showReservationLatestStatus({
+    showReservationResultStatus({
       kicker: "キャンセルできませんでした",
       heading: myReservationsMessage,
       rows: [["状態", "予約状況欄で内容を確認してください"]],
@@ -1342,9 +1344,10 @@ function openReservationScreen() {
     reservationDateInput.value = defaultReservationDate();
   }
   selectedReservationHour = null;
-  resetReservationLatestStatus();
+  resetReservationResultStatus();
   reservationScreen.hidden = false;
   document.body.classList.add("reservation-open");
+  renderMeasurementRecords();
   renderReservationStatus();
   renderReservationSlots();
   refreshRemoteReservations();
@@ -1474,7 +1477,7 @@ async function confirmReservation() {
 }
 
 function showReservationConfirmation(reservation) {
-  showReservationLatestStatus({
+  showReservationResultStatus({
     kicker: "予約確定しました",
     heading: `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`,
     rows: reservationDisplayRows(reservation),
@@ -1489,7 +1492,7 @@ function showReservationCancellation(reservation) {
   const heading = reservation
     ? `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`
     : "キャンセル済み";
-  showReservationLatestStatus({
+  showReservationResultStatus({
     kicker: "予約キャンセルしました",
     heading,
     rows: reservation ? reservationDisplayRows(reservation) : [["状態", "予約をキャンセルしました"]],
@@ -1499,19 +1502,29 @@ function showReservationCancellation(reservation) {
   });
 }
 
-function resetReservationLatestStatus() {
-  showReservationLatestStatus({
+function resetReservationResultStatus() {
+  showReservationResultStatus({
     kicker: "待機中",
     heading: "予約後にここへ表示",
     rows: [["表示内容", "予約確定・キャンセルの結果"]],
     statusMessage: "最新の操作結果を表示します",
     tone: "",
     canResend: false,
+    visible: false,
   });
 }
 
-function showReservationLatestStatus({ kicker, heading, rows, statusMessage, tone = "", canResend = false }) {
-  reservationLatestKicker.textContent = kicker;
+function showReservationResultStatus({
+  kicker,
+  heading,
+  rows,
+  statusMessage,
+  tone = "",
+  canResend = false,
+  visible = true,
+}) {
+  reservationConfirmation.hidden = !visible;
+  reservationResultKicker.textContent = kicker;
   reservationConfirmedTime.textContent = heading;
   reservationConfirmationDetails.innerHTML = rows
     .map(([label, value]) => `

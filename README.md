@@ -3,7 +3,7 @@
 これは勇吉屋公式LINEのリッチメニュー起点で、会員照会・ポイント・採寸予約を開くLIFF風デモです。
 
 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
-採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-reservation-sections`
+採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements`
 
 - `index.html`: LINEトーク画面 + リッチメニュー + 顧客側LIFF風画面
 - `staff.html`: 店舗側ポイント処理画面
@@ -25,11 +25,12 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸予約デモ
 
-最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-reservation-sections` で採寸予約画面を開けます。
+最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements` で採寸予約画面を開けます。
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
 - 予約画面の上部に本人の予約状況を表示し、同じ画面からキャンセル可能
+- 最新状況欄はメンバーごとの最新寸法情報を表示し、採寸記録の履歴一覧はこの画面に出さない
 - 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE Flex Messageのリッチメッセージとして送信
 - リッチメッセージのボタンは「予約キャンセル」として予約画面へ戻る導線
 - 通常ブラウザで確実にLINEへ届ける場合は、`worker/` の予約APIからMessaging APIのPush Messageで送信
@@ -48,7 +49,7 @@ window.YUUKICHIYA_LINE_CONFIG = {
   memberPageUrl: "https://example.com/?screen=member",
   pointsPageUrl: "https://example.com/?screen=points",
   staffPageUrl: "https://example.com/staff.html",
-  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?v=20260611-reservation-sections",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements",
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```
@@ -84,4 +85,4 @@ node scripts/apply-rich-menu.mjs
 ```
 
 `YUUKICHIYA_BASE_URL` はこのデモページを公開したHTTPS URLです。
-採寸予約URLは未指定なら `https://example.com/?screen=reservation` になります。LINE内で予約確定メッセージを送る場合は `YUUKICHIYA_MEASUREMENT_RESERVATION_URL='https://liff.line.me/2010371637-PcIXzbgC?v=20260611-reservation-sections'` を指定します。
+採寸予約URLは未指定なら `https://example.com/?screen=reservation` になります。LINE内で予約確定メッセージを送る場合は `YUUKICHIYA_MEASUREMENT_RESERVATION_URL='https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements'` を指定します。
