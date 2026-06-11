@@ -1306,6 +1306,22 @@ addMemberButton.addEventListener("click", () => {
 });
 
 function openInitialScreenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const liffState = params.get("liff.state");
+  const liffStateParams = liffState
+    ? new URLSearchParams(liffState.startsWith("?") ? liffState.slice(1) : liffState)
+    : null;
+  const screen = params.get("screen") || liffStateParams?.get("screen") || "member";
+
+  if (screen === "points") {
+    openPointsScreen();
+    return;
+  }
+  if (screen === "reservation") {
+    openReservationScreen();
+    return;
+  }
+
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   if (pointsScreen) pointsScreen.hidden = true;
   if (reservationScreen) reservationScreen.hidden = true;
