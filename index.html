@@ -6,9 +6,9 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-no-staff-button" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-reservation-cancel" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="./config.js?v=20260611-no-staff-button"></script>
+    <script src="./config.js?v=20260611-reservation-cancel"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
@@ -142,33 +142,33 @@
         </div>
       </section>
 
-      <section class="reservation-screen" id="reservationScreen" aria-label="採寸記録" hidden>
+      <section class="reservation-screen" id="reservationScreen" aria-label="採寸予約" hidden>
         <div class="reservation-phone">
           <header class="points-topbar">
             <button class="points-back" id="reservationCloseButton" type="button" aria-label="LINEに戻る">
               <span aria-hidden="true">‹</span>
             </button>
             <div>
-              <p>勇吉屋 採寸記録</p>
-              <h2>採寸予約と履歴</h2>
+              <p>勇吉屋 採寸予約</p>
+              <h2>予約状況と新規予約</h2>
             </div>
           </header>
 
-          <section class="measurement-record-card" aria-label="採寸記録">
+          <section class="reservation-card reservation-status-card" aria-label="予約状況">
             <div class="section-title-row">
               <div>
-                <h3><span class="section-title-icon" aria-hidden="true">✓</span>最新欄</h3>
-                <p class="section-caption">直近の採寸内容をメンバーごとに確認</p>
+                <h3><span class="section-title-icon" aria-hidden="true">✓</span>予約状況</h3>
+                <p class="section-caption">現在の予約を確認・キャンセル</p>
               </div>
-              <span class="record-sync-badge">最新記録</span>
+              <button class="refresh-reservations-button" id="refreshReservationsButton" type="button">更新</button>
             </div>
-            <div class="measurement-latest-list" id="measurementLatestList"></div>
+            <div class="reservation-status-list" id="reservationStatusList"></div>
           </section>
 
           <section class="reservation-card" aria-label="予約内容">
             <div class="section-title-row">
               <div>
-                <h3><span class="section-title-icon" aria-hidden="true">▣</span>最新予約欄</h3>
+                <h3><span class="section-title-icon" aria-hidden="true">▣</span>新規予約</h3>
                 <p class="section-caption">空いている1時間枠を選択</p>
               </div>
               <span class="reservation-note-chip">空き枠確認</span>
@@ -217,13 +217,6 @@
             </button>
           </section>
 
-          <section class="measurement-record-card measurement-history-card" aria-label="採寸履歴">
-            <div class="measurement-history-head">
-              <h3><span class="section-title-icon" aria-hidden="true">↻</span>履歴欄</h3>
-              <span>新しい順</span>
-            </div>
-            <div class="measurement-history-list" id="measurementHistoryList"></div>
-          </section>
         </div>
       </section>
 
@@ -244,6 +237,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-no-staff-button"></script>
+    <script src="./app.js?v=20260611-reservation-cancel"></script>
   </body>
 </html>

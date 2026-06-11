@@ -16,16 +16,23 @@ export default {
     }
 
     const url = new URL(request.url);
-    if (url.pathname !== "/" && url.pathname !== "/reservations") {
+    const reservationId = reservationIdFromPath(url.pathname);
+    if (url.pathname !== "/" && url.pathname !== "/reservations" && !reservationId) {
       return jsonResponse({ message: "Not found" }, 404, cors);
     }
 
     try {
       if (request.method === "GET") {
+        if (url.searchParams.get("mine") === "1") {
+          return await listMyReservations(request, env, cors);
+        }
         return await listReservations(url, env, cors);
       }
       if (request.method === "POST") {
         return await createReservation(request, env, cors);
+      }
+      if (request.method === "DELETE" && reservationId) {
+        return await cancelReservation(request, env, cors, reservationId);
       }
       return jsonResponse({ message: "Method not allowed" }, 405, cors);
     } catch (error) {
@@ -44,7 +51,7 @@ function corsHeaders(request, env) {
   const allowOrigin = allowedOrigins.includes("*") || allowedOrigins.includes(origin) ? origin || "*" : allowedOrigins[0];
   return {
     "Access-Control-Allow-Origin": allowOrigin,
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
@@ -60,6 +67,11 @@ function jsonResponse(body, status = 200, headers = {}) {
       "Cache-Control": "no-store",
     },
   });
+}
+
+function reservationIdFromPath(pathname) {
+  if (!pathname.startsWith("/reservations/")) return "";
+  return normalizeText(decodeURIComponent(pathname.slice("/reservations/".length)), 80);
 }
 
 async function listReservations(url, env, cors) {
@@ -84,6 +96,28 @@ async function listReservations(url, env, cors) {
   return jsonResponse({ reservations: result.results || [] }, 200, cors);
 }
 
+async function listMyReservations(request, env, cors) {
+  assertDatabase(env);
+  const lineUserId = await resolveLineUserId({}, env, request, { allowFallback: false, allowTestUser: false });
+  if (!lineUserId) {
+    return jsonResponse({ message: "LINEログイン情報を確認できませんでした" }, 401, cors);
+  }
+
+  const result = await env.DB.prepare(
+    `SELECT id, date, store, hour, start_time AS startTime, end_time AS endTime,
+            child_name AS childName, guardian_name AS guardianName,
+            member_number AS memberNumber, note, created_at AS createdAt
+       FROM reservations
+      WHERE line_user_id = ?
+      ORDER BY date ASC, hour ASC
+      LIMIT 20`,
+  )
+    .bind(lineUserId)
+    .all();
+
+  return jsonResponse({ reservations: result.results || [] }, 200, cors);
+}
+
 async function createReservation(request, env, cors) {
   assertDatabase(env);
   const payload = await request.json().catch(() => null);
@@ -101,7 +135,7 @@ async function createReservation(request, env, cors) {
     return jsonResponse({ message: "LINE送信用トークンが設定されていません" }, 500, cors);
   }
 
-  const lineUserId = await resolveLineUserId(payload, env);
+  const lineUserId = await resolveLineUserId(payload, env, request);
   if (!lineUserId) {
     return jsonResponse(
       { message: "LINEログイン情報を確認できませんでした。LINEアプリのリッチメニューから予約画面を開き直してください。" },
@@ -178,6 +212,41 @@ async function createReservation(request, env, cors) {
   );
 }
 
+async function cancelReservation(request, env, cors, reservationId) {
+  assertDatabase(env);
+  const lineUserId = await resolveLineUserId({}, env, request, { allowFallback: false, allowTestUser: false });
+  if (!lineUserId) {
+    return jsonResponse({ message: "LINEログイン情報を確認できませんでした" }, 401, cors);
+  }
+
+  const existing = await env.DB.prepare(
+    `SELECT id, date, store, hour, start_time AS startTime, end_time AS endTime,
+            child_name AS childName, guardian_name AS guardianName,
+            member_number AS memberNumber, note, line_user_id AS lineUserId, created_at AS createdAt
+       FROM reservations
+      WHERE id = ?`,
+  )
+    .bind(reservationId)
+    .first();
+
+  if (!existing) {
+    return jsonResponse({ message: "予約が見つかりません" }, 404, cors);
+  }
+  if (existing.lineUserId !== lineUserId) {
+    return jsonResponse({ message: "この予約はキャンセルできません" }, 403, cors);
+  }
+
+  await env.DB.prepare("DELETE FROM reservations WHERE id = ? AND line_user_id = ?").bind(reservationId, lineUserId).run();
+  console.log("reservation cancelled", {
+    id: existing.id,
+    date: existing.date,
+    store: existing.store,
+    hour: existing.hour,
+  });
+
+  return jsonResponse({ cancelled: true, reservation: publicReservation(existing) }, 200, cors);
+}
+
 function assertDatabase(env) {
   if (!env.DB) {
     throw new Error("D1 database binding DB is required.");
@@ -239,8 +308,11 @@ function isUniqueConstraintError(error) {
   return message.includes("UNIQUE") || message.includes("constraint");
 }
 
-async function resolveLineUserId(payload, env) {
-  const accessToken = normalizeText(payload.lineAccessToken, 2048);
+async function resolveLineUserId(payload, env, request = null, options = {}) {
+  const { allowFallback = true, allowTestUser = true } = options;
+  const authorization = request?.headers?.get("Authorization") || "";
+  const bearerToken = authorization.match(/^Bearer\s+(.+)$/i)?.[1] || "";
+  const accessToken = normalizeText(payload.lineAccessToken || bearerToken, 2048);
   if (accessToken) {
     const response = await fetch("https://api.line.me/v2/profile", {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -253,12 +325,16 @@ async function resolveLineUserId(payload, env) {
     }
   }
 
+  if (!allowFallback) {
+    return "";
+  }
+
   const fallbackUserId = normalizeText(payload.lineUserId, 128);
   if (fallbackUserId.startsWith("U")) {
     return fallbackUserId;
   }
 
-  if (env.YUUKICHIYA_TEST_LINE_USER_ID) {
+  if (allowTestUser && env.YUUKICHIYA_TEST_LINE_USER_ID) {
     return env.YUUKICHIYA_TEST_LINE_USER_ID;
   }
 
@@ -327,6 +403,17 @@ function reservationDisplayRows(reservation) {
   return rows.filter(([, value]) => value);
 }
 
+function reservationCancelUrl(env, reservation) {
+  const targetUrl = env.PUBLIC_RESERVATION_URL || "https://liff.line.me/2010371637-PcIXzbgC";
+  try {
+    const url = new URL(targetUrl);
+    url.searchParams.set("reservationId", reservation.id);
+    return url.toString();
+  } catch (error) {
+    return targetUrl;
+  }
+}
+
 function flexRow(label, value) {
   return {
     type: "box",
@@ -388,8 +475,8 @@ function buildReservationFlexMessage(env, reservation) {
             color: "#06a944",
             action: {
               type: "uri",
-              label: "予約画面を開く",
-              uri: env.PUBLIC_RESERVATION_URL || "https://liff.line.me/2010371637-PcIXzbgC",
+              label: "予約キャンセル",
+              uri: reservationCancelUrl(env, reservation),
             },
           },
         ],

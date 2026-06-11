@@ -16,3 +16,6 @@ CREATE TABLE IF NOT EXISTS reservations (
 
 CREATE INDEX IF NOT EXISTS idx_reservations_date_store
   ON reservations(date, store);
+
+CREATE INDEX IF NOT EXISTS idx_reservations_line_user
+  ON reservations(line_user_id, date, hour);

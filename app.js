@@ -196,6 +196,8 @@ const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
 const reservationScreen = document.getElementById("reservationScreen");
 const reservationMenuButton = document.getElementById("reservationMenuButton");
 const reservationCloseButton = document.getElementById("reservationCloseButton");
+const refreshReservationsButton = document.getElementById("refreshReservationsButton");
+const reservationStatusList = document.getElementById("reservationStatusList");
 const measurementLatestList = document.getElementById("measurementLatestList");
 const measurementHistoryList = document.getElementById("measurementHistoryList");
 const reservationMemberInput = document.getElementById("reservationMemberInput");
@@ -230,6 +232,10 @@ let liffInitError = null;
 let remoteReservationCache = [];
 let remoteReservationLookupKey = "";
 let remoteReservationLoading = false;
+let myReservationCache = [];
+let myReservationsLoading = false;
+let myReservationsMessage = "";
+let cancellingReservationId = "";
 let isPageScrollLocked = false;
 let lockedPageScrollY = 0;
 let previousBodyScrollStyles = null;
@@ -870,11 +876,207 @@ function currentReservations() {
   return [...localReservations, ...remoteReservationCache];
 }
 
+function currentLineAccessToken() {
+  try {
+    return window.liff?.getAccessToken?.() || "";
+  } catch (error) {
+    return "";
+  }
+}
+
 function reservationApiUrlWithParams() {
   const url = new URL(lineConfig.reservationApiUrl);
   url.searchParams.set("date", reservationDateInput.value);
   url.searchParams.set("store", reservationStoreInput.value);
   return url.toString();
+}
+
+function myReservationsApiUrl() {
+  const url = new URL(lineConfig.reservationApiUrl);
+  url.searchParams.set("mine", "1");
+  return url.toString();
+}
+
+function reservationItemApiUrl(id) {
+  const url = new URL(lineConfig.reservationApiUrl);
+  url.pathname = `${url.pathname.replace(/\/$/, "")}/${encodeURIComponent(id)}`;
+  return url.toString();
+}
+
+function sortedReservations(reservations) {
+  return [...reservations].sort((a, b) => {
+    const dateOrder = String(a.date).localeCompare(String(b.date));
+    return dateOrder || Number(a.hour) - Number(b.hour);
+  });
+}
+
+function visibleLocalReservations() {
+  return sortedReservations(readReservations().filter((reservation) => !reservation.demoSeed));
+}
+
+function renderReservationStatus() {
+  if (!reservationStatusList) return;
+
+  if (myReservationsLoading) {
+    reservationStatusList.innerHTML = `
+      <div class="reservation-status-empty">
+        <strong>予約状況を確認中</strong>
+        <span>LINEアカウントに紐づく予約を読み込んでいます</span>
+      </div>
+    `;
+    return;
+  }
+
+  const reservations = reservationApiEnabled() ? myReservationCache : visibleLocalReservations();
+  const messageHtml = myReservationsMessage
+    ? `<div class="reservation-status-alert">${escapeHtml(myReservationsMessage)}</div>`
+    : "";
+
+  if (!reservations.length) {
+    reservationStatusList.innerHTML = `
+      ${messageHtml}
+      <div class="reservation-status-empty">
+        <strong>現在の予約はありません</strong>
+        <span>下の空き枠から新しい採寸予約を入れられます</span>
+      </div>
+    `;
+    return;
+  }
+
+  reservationStatusList.innerHTML = `
+    ${messageHtml}
+    ${sortedReservations(reservations)
+      .map((reservation) => {
+        const hour = Number(reservation.hour);
+        const past = isPastReservationSlot(reservation.date, hour);
+        const isCancelling = cancellingReservationId === reservation.id;
+        return `
+          <article class="reservation-status-item">
+            <div class="reservation-status-main">
+              <span class="reservation-status-badge">${past ? "受付終了" : "予約中"}</span>
+              <strong>${escapeHtml(formatReservationDate(reservation.date))} ${escapeHtml(timeRangeLabel(hour))}</strong>
+              <dl>
+                ${reservationDisplayRows(reservation)
+                  .map(
+                    ([label, value]) => `
+                      <div>
+                        <dt>${escapeHtml(label)}</dt>
+                        <dd>${escapeHtml(value)}</dd>
+                      </div>
+                    `,
+                  )
+                  .join("")}
+              </dl>
+            </div>
+            <button
+              class="cancel-reservation-button"
+              type="button"
+              data-cancel-reservation-id="${escapeHtml(reservation.id)}"
+              ${past || isCancelling ? "disabled" : ""}
+            >
+              ${isCancelling ? "キャンセル中" : "予約キャンセル"}
+            </button>
+          </article>
+        `;
+      })
+      .join("")}
+  `;
+}
+
+async function refreshMyReservations() {
+  if (!reservationStatusList) return;
+
+  myReservationsMessage = "";
+  if (!reservationApiEnabled()) {
+    myReservationsLoading = false;
+    myReservationCache = [];
+    renderReservationStatus();
+    return;
+  }
+
+  if (liffReadyPromise) {
+    await liffReadyPromise;
+  }
+
+  const accessToken = currentLineAccessToken();
+  if (!accessToken) {
+    myReservationsLoading = false;
+    myReservationCache = [];
+    myReservationsMessage = "LINEログイン後に予約状況を表示します";
+    renderReservationStatus();
+    return;
+  }
+
+  myReservationsLoading = true;
+  renderReservationStatus();
+
+  try {
+    const response = await fetch(myReservationsApiUrl(), {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.message || `予約状況を取得できませんでした: ${response.status}`);
+    }
+    myReservationCache = Array.isArray(data.reservations) ? data.reservations : [];
+  } catch (error) {
+    console.warn("My reservations fetch failed", error);
+    myReservationsMessage = error.message || "予約状況を取得できませんでした";
+  } finally {
+    myReservationsLoading = false;
+    renderReservationStatus();
+  }
+}
+
+async function cancelReservation(reservationId) {
+  if (!reservationId || cancellingReservationId) return;
+
+  cancellingReservationId = reservationId;
+  myReservationsMessage = "";
+  renderReservationStatus();
+
+  try {
+    if (reservationApiEnabled()) {
+      const accessToken = currentLineAccessToken();
+      if (!accessToken) {
+        throw new Error("LINEログイン後にキャンセルできます");
+      }
+
+      const response = await fetch(reservationItemApiUrl(reservationId), {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || `キャンセルできませんでした: ${response.status}`);
+      }
+    } else {
+      writeReservations(readReservations().filter((reservation) => reservation.id !== reservationId));
+    }
+
+    if (lastReservation?.id === reservationId) {
+      reservationConfirmation.hidden = true;
+      lastReservation = null;
+      lastReservationMessage = "";
+      lastReservationFlexMessage = null;
+    }
+    await refreshRemoteReservations();
+    await refreshMyReservations();
+    myReservationsMessage = "予約をキャンセルしました";
+  } catch (error) {
+    console.warn("Reservation cancel failed", error);
+    myReservationsMessage = error.message || "予約をキャンセルできませんでした";
+  } finally {
+    cancellingReservationId = "";
+    renderReservationSlots();
+    renderReservationStatus();
+  }
 }
 
 async function refreshRemoteReservations() {
@@ -984,9 +1186,10 @@ function openReservationScreen() {
   setLineSendStatus("LINEメッセージを準備中");
   reservationScreen.hidden = false;
   document.body.classList.add("reservation-open");
-  renderMeasurementRecords();
+  renderReservationStatus();
   renderReservationSlots();
   refreshRemoteReservations();
+  refreshMyReservations();
 }
 
 function closeReservationScreen() {
@@ -1014,7 +1217,7 @@ function buildReservationCandidate(hour) {
     memberNumber,
     note: reservationNoteInput.value.trim(),
     lineUserId: lineProfile?.userId || "",
-    lineAccessToken: window.liff?.getAccessToken?.() || "",
+    lineAccessToken: currentLineAccessToken(),
     createdAt: new Date().toISOString(),
   };
 }
@@ -1065,7 +1268,7 @@ async function confirmReservation() {
     if (liffReadyPromise) {
       await liffReadyPromise;
     }
-    const canSendLineIdentity = Boolean(lineProfile?.userId || window.liff?.getAccessToken?.());
+    const canSendLineIdentity = Boolean(lineProfile?.userId || currentLineAccessToken());
     if (!canSendLineIdentity) {
       setLineSendStatus("LINE通知のためログイン確認を開きます。ログイン後にもう一度予約を確定してください。", "warning");
       try {
@@ -1091,6 +1294,7 @@ async function confirmReservation() {
     selectedReservationHour = null;
     renderReservationSlots();
     showReservationConfirmation(reservation);
+    await refreshMyReservations();
     await sendReservationLineMessage();
   } catch (error) {
     if (error.code === "slot_taken") {
@@ -1148,14 +1352,27 @@ function buildReservationLineMessage(reservation) {
   ].join("\n");
 }
 
-function reservationPageUrl() {
+function reservationPageUrl(reservation = null) {
+  let targetUrl = "";
   if (lineConfig.measurementReservationUrl?.startsWith("https://")) {
-    return lineConfig.measurementReservationUrl;
+    targetUrl = lineConfig.measurementReservationUrl;
+  } else if (window.location.href.startsWith("https://")) {
+    targetUrl = window.location.href;
+  } else {
+    targetUrl = lineConfig.officialLineUrl || "https://lin.ee/7byeeeA";
   }
-  if (window.location.href.startsWith("https://")) {
-    return window.location.href;
+
+  if (!reservation?.id || !targetUrl.startsWith("https://")) {
+    return targetUrl;
   }
-  return lineConfig.officialLineUrl || "https://lin.ee/7byeeeA";
+
+  try {
+    const url = new URL(targetUrl);
+    url.searchParams.set("reservationId", reservation.id);
+    return url.toString();
+  } catch (error) {
+    return targetUrl;
+  }
 }
 
 function flexRow(label, value) {
@@ -1248,8 +1465,8 @@ function buildReservationFlexMessage(reservation) {
             color: "#06a944",
             action: {
               type: "uri",
-              label: "予約画面を開く",
-              uri: reservationPageUrl(),
+              label: "予約キャンセル",
+              uri: reservationPageUrl(reservation),
             },
           },
         ],
@@ -1472,6 +1689,7 @@ function render() {
   }
   if (reservationScreen && !reservationScreen.hidden) {
     renderReservationSlots();
+    renderReservationStatus();
   }
 }
 
@@ -1482,6 +1700,13 @@ pointsMenuButton?.addEventListener("click", openPointsScreen);
 pointsCloseButton?.addEventListener("click", returnToLine);
 reservationMenuButton?.addEventListener("click", openReservationScreen);
 reservationCloseButton?.addEventListener("click", returnToLine);
+refreshReservationsButton?.addEventListener("click", refreshMyReservations);
+reservationStatusList?.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest("[data-cancel-reservation-id]");
+  if (!button || button.disabled) return;
+  cancelReservation(button.dataset.cancelReservationId);
+});
 reservationDateInput.addEventListener("change", () => {
   selectedReservationHour = null;
   renderReservationSlots();
@@ -1520,6 +1745,7 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("storage", (event) => {
   if (event.key === reservationStorageKey && !reservationScreen.hidden) {
     renderReservationSlots();
+    renderReservationStatus();
   }
   if (event.key === pointStorageKey && event.newValue) {
     try {

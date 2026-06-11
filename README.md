@@ -29,11 +29,13 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
+- 予約画面の上部に本人の予約状況を表示し、同じ画面からキャンセル可能
 - 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE Flex Messageのリッチメッセージとして送信
+- リッチメッセージのボタンは「予約キャンセル」として予約画面へ戻る導線
 - 通常ブラウザで確実にLINEへ届ける場合は、`worker/` の予約APIからMessaging APIのPush Messageで送信
 - LIFF単体の `sendMessages` は、LINEアプリ内のトークから開いた場合だけの補助経路
 
-静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に `worker/` の予約APIを設定し、D1側で `date + store + hour` を一意制約にして二重予約を防ぎます。LINEへ確実に届く通知は、ココトモと同じくサーバー側にチャネルアクセストークンを置いてMessaging APIでFlex MessageをPush送信します。
+静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に `worker/` の予約APIを設定し、D1側で `date + store + hour` を一意制約にして二重予約を防ぎます。本人の予約状況取得とキャンセルはLIFF access tokenからLINEユーザーを検証して行います。LINEへ確実に届く通知は、ココトモと同じくサーバー側にチャネルアクセストークンを置いてMessaging APIでFlex MessageをPush送信します。
 
 ## LINE接続
 
@@ -65,6 +67,11 @@ npx wrangler deploy
 ```
 
 GitHub Pagesや `config.js` にLINEチャネルアクセストークンは置きません。ココトモと同じく、サーバー側のsecretからMessaging APIを呼びます。
+
+予約状況とキャンセル:
+
+- `GET /reservations?mine=1`: `Authorization: Bearer <LIFF access token>` で本人の予約一覧を返す
+- `DELETE /reservations/:id`: 同じLINEユーザーの予約だけキャンセルする
 
 ## リッチメニュー投入
 
