@@ -6,36 +6,21 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-school-avatar" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-member-back" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE 会員情報">
       <header class="line-header">
-        <a class="back-link" href="https://lin.ee/7byeeeA" target="_blank" rel="noreferrer" aria-label="勇吉屋公式LINEを開く">
+        <button class="back-link" id="backButton" type="button" aria-label="戻る">
           <span aria-hidden="true">‹</span>
-        </a>
+        </button>
         <div>
           <p class="header-kicker" id="liffStatus">勇吉屋 公式LINE</p>
           <h1>会員サービス</h1>
         </div>
       </header>
-
-      <nav class="demo-menu" aria-label="LINEリッチメニュー">
-        <button class="demo-menu-button is-active" id="memberMenuButton" type="button">
-          <span>会員照会</span>
-        </button>
-        <button class="demo-menu-button is-point" id="pointsMenuButton" type="button">
-          <span>ポイント</span>
-        </button>
-        <button class="demo-menu-button" id="reservationMenuButton" type="button">
-          <span>採寸予約</span>
-        </button>
-        <a class="demo-menu-button" href="https://yuukichiya.base.shop/" target="_blank" rel="noreferrer">
-          <span>ECサイト</span>
-        </a>
-      </nav>
 
       <section class="representative-card" aria-label="代表者枠">
         <div class="representative-head">
@@ -277,6 +262,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-school-avatar"></script>
+    <script src="./app.js?v=20260611-member-back"></script>
   </body>
 </html>

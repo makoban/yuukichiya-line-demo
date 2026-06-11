@@ -75,6 +75,7 @@ const schoolInput = document.getElementById("schoolInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
 const liffStatus = document.getElementById("liffStatus");
+const backButton = document.getElementById("backButton");
 const pointsMenuButton = document.getElementById("pointsMenuButton");
 const pointsScreen = document.getElementById("pointsScreen");
 const pointsCloseButton = document.getElementById("pointsCloseButton");
@@ -751,19 +752,26 @@ function render() {
   renderReservationMembers();
 }
 
-function openInitialScreenFromUrl() {
-  const screen = new URLSearchParams(window.location.search).get("screen");
-  if (screen === "points") openPointsScreen();
-  if (screen === "reservation" || screen === "measurement-reservation") openReservationScreen();
+function goBack() {
+  if (window.liff?.isInClient?.()) {
+    window.liff.closeWindow();
+    return;
+  }
+  if (window.history.length > 1) {
+    window.history.back();
+  }
 }
 
+backButton.addEventListener("click", goBack);
 avatarOpenButton.addEventListener("click", openAvatarSheet);
 avatarCloseButton.addEventListener("click", closeAvatarSheet);
 avatarSheet.addEventListener("click", (event) => {
   if (event.target === avatarSheet) closeAvatarSheet();
 });
 
-pointsMenuButton.addEventListener("click", openPointsScreen);
+if (pointsMenuButton) {
+  pointsMenuButton.addEventListener("click", openPointsScreen);
+}
 pointsCloseButton.addEventListener("click", closePointsScreen);
 staffScanButton.addEventListener("click", openStaffSheet);
 staffCloseButton.addEventListener("click", closeStaffSheet);
@@ -793,7 +801,9 @@ applyPointsButton.addEventListener("click", () => {
   showPointEffect(delta);
 });
 
-reservationMenuButton.addEventListener("click", openReservationScreen);
+if (reservationMenuButton) {
+  reservationMenuButton.addEventListener("click", openReservationScreen);
+}
 reservationCloseButton.addEventListener("click", closeReservationScreen);
 reservationDateInput.addEventListener("change", () => {
   selectedReservationSlot = "";
@@ -865,5 +875,4 @@ window.addEventListener("storage", (event) => {
 
 initReservationForm();
 render();
-openInitialScreenFromUrl();
 initLiff();
