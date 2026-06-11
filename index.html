@@ -6,7 +6,7 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-official-manager" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-coupon-ticket" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js?v=20260611-official-manager"></script>
   </head>
@@ -290,22 +290,51 @@
             </button>
             <div>
               <p>勇吉屋 クーポン</p>
-              <h2>ご利用可能なクーポン</h2>
+              <h2>LINEデビューキャンペーン</h2>
             </div>
           </header>
 
-          <section class="coupon-card" aria-label="クーポン">
-            <div class="coupon-card-top">
-              <span>店頭提示</span>
-              <strong>制服・体操服の採寸相談</strong>
+          <section class="coupon-ticket" aria-label="勇吉屋公式LINEデビューキャンペーン クーポン券">
+            <div class="coupon-ticket-top">
+              <span>公式LINE限定</span>
+              <strong>10% OFF</strong>
             </div>
-            <p>LINE会員画面を店頭でご提示ください。対象商品や期間は店舗で確認します。</p>
-            <button class="coupon-present-button" type="button">この画面を提示する</button>
+
+            <div class="coupon-ticket-main">
+              <p class="coupon-kicker">勇吉屋公式LINEデビューキャンペーン</p>
+              <h3>全商品10％引き</h3>
+              <p class="coupon-lead">店頭でこの画面を提示してください。</p>
+
+              <div class="coupon-code-panel">
+                <span>クーポンコード</span>
+                <strong>LINE10-202607</strong>
+              </div>
+
+              <div class="coupon-qr-row">
+                <div class="coupon-qr-frame">
+                  <img src="./assets/coupons/line10-202607-qr.png" alt="クーポンQR LINE10-202607" />
+                </div>
+                <dl class="coupon-meta">
+                  <div>
+                    <dt>有効期限</dt>
+                    <dd>2026年7月31日まで</dd>
+                  </div>
+                  <div>
+                    <dt>対象</dt>
+                    <dd>全商品</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
           </section>
 
-          <section class="coupon-note-card" aria-label="クーポン利用条件">
-            <h3>ご利用について</h3>
-            <p>実運用では、会員情報・学校・購入履歴に合わせてクーポンを出し分けます。この画面はリッチメニュー動作確認用です。</p>
+          <section class="coupon-terms-card" aria-label="クーポン利用条件">
+            <h3>ご利用条件</h3>
+            <ul>
+              <li>1会計につき1回ご利用いただけます。</li>
+              <li>他の割引・クーポンとの併用はできません。</li>
+              <li>一部対象外商品がある場合は店頭でご案内します。</li>
+            </ul>
           </section>
         </div>
       </section>
@@ -327,6 +356,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-official-manager"></script>
+    <script src="./app.js?v=20260611-coupon-ticket"></script>
   </body>
 </html>

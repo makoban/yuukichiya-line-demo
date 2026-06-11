@@ -210,6 +210,8 @@ const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
 const reservationScreen = document.getElementById("reservationScreen");
 const reservationMenuButton = document.getElementById("reservationMenuButton");
 const reservationCloseButton = document.getElementById("reservationCloseButton");
+const couponScreen = document.getElementById("couponScreen");
+const couponCloseButton = document.getElementById("couponCloseButton");
 const refreshReservationsButton = document.getElementById("refreshReservationsButton");
 const reservationStatusList = document.getElementById("reservationStatusList");
 const measurementLatestList = document.getElementById("measurementLatestList");
@@ -219,8 +221,6 @@ const measurementRecordsCloseButton = document.getElementById("measurementRecord
 const measurementRecordsCountText = document.getElementById("measurementRecordsCountText");
 const measurementMemberFilters = document.getElementById("measurementMemberFilters");
 const measurementRecordsPageList = document.getElementById("measurementRecordsPageList");
-const couponScreen = document.getElementById("couponScreen");
-const couponCloseButton = document.getElementById("couponCloseButton");
 const reservationMemberInput = document.getElementById("reservationMemberInput");
 const reservationStoreInput = document.getElementById("reservationStoreInput");
 const reservationDateInput = document.getElementById("reservationDateInput");
@@ -2148,6 +2148,8 @@ document.addEventListener("keydown", (event) => {
     closeCouponScreen();
   } else if (measurementRecordsScreen && !measurementRecordsScreen.hidden) {
     closeMeasurementRecordsScreen();
+  } else if (couponScreen && !couponScreen.hidden) {
+    closeCouponScreen();
   } else if (!reservationScreen.hidden) {
     closeReservationScreen();
   } else if (!pointsScreen.hidden) {
