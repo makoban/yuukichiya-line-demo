@@ -9,7 +9,7 @@
   "areas": [
     {
       "bounds": { "x": 0, "y": 0, "width": 833, "height": 843 },
-      "action": { "type": "uri", "uri": "{{BASE_URL}}/" }
+      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=member" }
     },
     {
       "bounds": { "x": 833, "y": 0, "width": 834, "height": 843 },
