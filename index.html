@@ -6,18 +6,20 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-coupon-ticket" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-left-back-button" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js?v=20260611-official-manager"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
       <header class="member-page-header">
+        <button class="line-return-button" id="lineReturnButton" type="button" aria-label="LINEに戻る">
+          <span aria-hidden="true">‹</span>
+        </button>
         <div>
           <p class="header-kicker" id="liffStatus">勇吉屋 公式LINE</p>
           <h1>会員照会</h1>
         </div>
-        <button class="line-return-button" id="lineReturnButton" type="button">LINEに戻る</button>
       </header>
 
       <section class="member-service-screen" id="memberServiceScreen" aria-label="会員照会">
