@@ -13,78 +13,43 @@ const avatarFiles = [
   "avatar-12-mascot.png",
 ];
 
-const presets = {
-  guardian: [
-    {
-      id: "m1",
-      name: "山田 由美",
-      birthday: "1985-06-11",
-      role: "代表者",
-      school: "",
-      avatar: "./assets/avatars/avatar-04-guardian.png",
-    },
-    {
-      id: "m2",
-      name: "山田 花子",
-      birthday: "2013-08-20",
-      role: "生徒",
-      school: "豊田市立さくら中学校",
-      avatar: "./assets/avatars/avatar-01-student-girl.png",
-    },
-    {
-      id: "m3",
-      name: "山田 太郎",
-      birthday: "2015-05-12",
-      role: "生徒",
-      school: "豊田市立みどり小学校",
-      avatar: "./assets/avatars/avatar-02-student-boy.png",
-    },
-  ],
-  student: [
-    {
-      id: "m1",
-      name: "山田 一郎",
-      birthday: "2009-10-02",
-      role: "代表者",
-      school: "豊田高校",
-      avatar: "./assets/avatars/avatar-03-student-senior.png",
-    },
-    {
-      id: "m2",
-      name: "山田 太郎",
-      birthday: "2015-05-12",
-      role: "生徒",
-      school: "豊田市立みどり小学校",
-      avatar: "./assets/avatars/avatar-02-student-boy.png",
-    },
-  ],
-  family: [
-    {
-      id: "m1",
-      name: "山田 さくら",
-      birthday: "1978-02-18",
-      role: "代表者",
-      school: "",
-      avatar: "./assets/avatars/avatar-10-owl.png",
-    },
-    {
-      id: "m2",
-      name: "山田 花子",
-      birthday: "2013-08-20",
-      role: "生徒",
-      school: "豊田市立さくら中学校",
-      avatar: "./assets/avatars/avatar-01-student-girl.png",
-    },
-  ],
-};
+const initialMembers = [
+  {
+    id: "m1",
+    name: "山田 由美",
+    birthday: "1985-06-11",
+    role: "代表者",
+    school: "",
+    avatar: "./assets/avatars/avatar-04-guardian.png",
+  },
+  {
+    id: "m2",
+    name: "山田 花子",
+    birthday: "2013-08-20",
+    role: "生徒",
+    school: "豊田市立さくら中学校",
+    avatar: "./assets/avatars/avatar-01-student-girl.png",
+  },
+  {
+    id: "m3",
+    name: "山田 太郎",
+    birthday: "2015-05-12",
+    role: "生徒",
+    school: "豊田市立みどり小学校",
+    avatar: "./assets/avatars/avatar-02-student-boy.png",
+  },
+];
 
-let mode = "guardian";
-let members = clonePreset(mode);
+let members = cloneMembers(initialMembers);
 let selectedId = members[0].id;
 
 const memberSummary = document.getElementById("memberSummary");
 const memberList = document.getElementById("memberList");
 const avatarGrid = document.getElementById("avatarGrid");
+const avatarSheet = document.getElementById("avatarSheet");
+const avatarOpenButton = document.getElementById("avatarOpenButton");
+const avatarCloseButton = document.getElementById("avatarCloseButton");
+const representativeAvatar = document.getElementById("representativeAvatar");
 const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const roleInput = document.getElementById("roleInput");
@@ -104,8 +69,12 @@ function selectedMember() {
   return members.find((member) => member.id === selectedId) || members[0];
 }
 
-function clonePreset(presetMode) {
-  return presets[presetMode].map((member) => ({ ...member }));
+function cloneMembers(list) {
+  return list.map((member) => ({ ...member }));
+}
+
+function roleLabel(member, index) {
+  return index === 0 ? "代表者" : member.role;
 }
 
 function calcAge(birthday) {
@@ -146,21 +115,19 @@ function gradeText(member) {
 
 function renderSummary() {
   const rep = members[0];
+  representativeAvatar.src = rep.avatar;
+  representativeAvatar.alt = `${rep.name}の代表者アイコン`;
   memberSummary.innerHTML = `
-    <div class="summary-avatar">
-      <img src="${rep.avatar}" alt="${rep.name}のアイコン" />
-    </div>
     <div class="summary-text">
       <strong>${rep.name} 様</strong>
       <div class="summary-meta">
         <span class="chip">会員番号 YK-001234</span>
-        <span class="chip">${rep.role}</span>
+        <span class="chip">代表者</span>
         <span class="chip">${ageText(rep)}</span>
         <span class="chip">${gradeText(rep)}</span>
       </div>
     </div>
   `;
-  drawQr(`YK-001234:${rep.name}`);
 }
 
 async function initLiff() {
@@ -192,15 +159,16 @@ async function initLiff() {
 
 function renderMembers() {
   memberList.innerHTML = members
-    .map((member) => {
+    .map((member, index) => {
       const active = member.id === selectedId ? " is-active" : "";
+      const representative = index === 0 ? " is-representative" : "";
       const school = member.school || "学校登録なし";
       return `
-        <button class="member-card${active}" type="button" data-id="${member.id}">
+        <button class="member-card${active}${representative}" type="button" data-id="${member.id}">
           <img src="${member.avatar}" alt="${member.name}のアイコン" />
-          <span>
+          <span class="member-card-main">
             <strong>${member.name}</strong>
-            <span>${member.role} / ${school}</span>
+            <span class="member-card-detail">${roleLabel(member, index)} / ${school}</span>
           </span>
           <span class="member-age">
             <b>${ageText(member)}</b>
@@ -245,6 +213,7 @@ function renderAvatars() {
     button.addEventListener("click", () => {
       selectedMember().avatar = button.dataset.src;
       render();
+      closeAvatarSheet();
     });
   });
 }
@@ -256,61 +225,16 @@ function updateSelected(key, value) {
   renderAvatars();
 }
 
-function drawQr(seed) {
-  const canvas = document.getElementById("qrCanvas");
-  const ctx = canvas.getContext("2d");
-  const size = canvas.width;
-  const cells = 25;
-  const cell = Math.floor(size / cells);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, size, size);
-
-  function hashAt(index) {
-    let hash = 2166136261;
-    const text = `${seed}:${index}`;
-    for (let i = 0; i < text.length; i += 1) {
-      hash ^= text.charCodeAt(i);
-      hash = Math.imul(hash, 16777619);
-    }
-    return hash >>> 0;
-  }
-
-  function finder(x, y) {
-    ctx.fillStyle = "#111827";
-    ctx.fillRect(x * cell, y * cell, cell * 7, cell * 7);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect((x + 1) * cell, (y + 1) * cell, cell * 5, cell * 5);
-    ctx.fillStyle = "#111827";
-    ctx.fillRect((x + 2) * cell, (y + 2) * cell, cell * 3, cell * 3);
-  }
-
-  finder(1, 1);
-  finder(17, 1);
-  finder(1, 17);
-
-  ctx.fillStyle = "#111827";
-  for (let y = 0; y < cells; y += 1) {
-    for (let x = 0; x < cells; x += 1) {
-      const inFinder =
-        (x >= 1 && x < 8 && y >= 1 && y < 8) ||
-        (x >= 17 && x < 24 && y >= 1 && y < 8) ||
-        (x >= 1 && x < 8 && y >= 17 && y < 24);
-      if (inFinder) continue;
-      if (hashAt(y * cells + x) % 3 === 0) {
-        ctx.fillRect(x * cell, y * cell, cell, cell);
-      }
-    }
-  }
+function openAvatarSheet() {
+  selectedId = members[0].id;
+  render();
+  avatarSheet.hidden = false;
+  document.body.classList.add("sheet-open");
 }
 
-function setMode(nextMode) {
-  mode = nextMode;
-  members = clonePreset(mode);
-  selectedId = members[0].id;
-  document.querySelectorAll(".mode-button").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.mode === mode);
-  });
-  render();
+function closeAvatarSheet() {
+  avatarSheet.hidden = true;
+  document.body.classList.remove("sheet-open");
 }
 
 function render() {
@@ -320,8 +244,14 @@ function render() {
   renderAvatars();
 }
 
-document.querySelectorAll(".mode-button").forEach((button) => {
-  button.addEventListener("click", () => setMode(button.dataset.mode));
+avatarOpenButton.addEventListener("click", openAvatarSheet);
+avatarCloseButton.addEventListener("click", closeAvatarSheet);
+avatarSheet.addEventListener("click", (event) => {
+  if (event.target === avatarSheet) closeAvatarSheet();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !avatarSheet.hidden) closeAvatarSheet();
 });
 
 nameInput.addEventListener("input", (event) => updateSelected("name", event.target.value));
@@ -336,6 +266,7 @@ photoInput.addEventListener("change", (event) => {
   reader.onload = () => {
     selectedMember().avatar = reader.result;
     render();
+    closeAvatarSheet();
   };
   reader.readAsDataURL(file);
 });
