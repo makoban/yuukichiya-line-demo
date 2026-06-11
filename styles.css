@@ -1389,6 +1389,7 @@ textarea:focus {
   justify-items: center;
   padding: 16px;
   background: rgba(15, 23, 42, 0.34);
+  overscroll-behavior: contain;
 }
 
 .avatar-sheet[hidden] {
@@ -1399,6 +1400,8 @@ textarea:focus {
   width: min(100%, 430px);
   max-height: min(82vh, 620px);
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
   border-radius: 24px 24px 18px 18px;
   background: white;

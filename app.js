@@ -231,6 +231,9 @@ let liffInitError = null;
 let remoteReservationCache = [];
 let remoteReservationLookupKey = "";
 let remoteReservationLoading = false;
+let isPageScrollLocked = false;
+let lockedPageScrollY = 0;
+let previousBodyScrollStyles = null;
 
 syncPointState(readPointState(), { silent: true });
 liffReadyPromise = initLiff();
@@ -1401,16 +1404,51 @@ function drawQrToCanvas(canvas, seed) {
   }
 }
 
+function lockPageScroll() {
+  if (isPageScrollLocked) return;
+
+  lockedPageScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  previousBodyScrollStyles = {
+    position: document.body.style.position,
+    top: document.body.style.top,
+    left: document.body.style.left,
+    right: document.body.style.right,
+    width: document.body.style.width,
+    overflow: document.body.style.overflow,
+  };
+
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${lockedPageScrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
+  isPageScrollLocked = true;
+}
+
+function unlockPageScroll() {
+  if (!isPageScrollLocked) return;
+
+  const restoreY = lockedPageScrollY;
+  Object.assign(document.body.style, previousBodyScrollStyles);
+  previousBodyScrollStyles = null;
+  lockedPageScrollY = 0;
+  isPageScrollLocked = false;
+  window.scrollTo(0, restoreY);
+}
+
 function openAvatarSheet() {
   selectedId = members[0].id;
   render();
   avatarSheet.hidden = false;
   document.body.classList.add("sheet-open");
+  lockPageScroll();
 }
 
 function closeAvatarSheet() {
   avatarSheet.hidden = true;
   document.body.classList.remove("sheet-open");
+  unlockPageScroll();
 }
 
 function openMemberService() {
