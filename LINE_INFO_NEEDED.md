@@ -2,6 +2,10 @@
 
 今回の静的デモを見るだけなら不要です。
 
+公開済みデモURL:
+
+- https://makoban.github.io/yuukichiya-line-demo/
+
 本番または実際のLINEメニューに接続する段階では、以下が必要です。
 
 - LINE公式アカウントの管理権限

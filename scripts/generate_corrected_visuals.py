@@ -461,7 +461,7 @@ def save_slides():
         ("02_rich_menu_flow.png", slide_menu_flow()),
         ("03_member_children.png", slide_member()),
         ("04_points_qr.png", slide_points()),
-        ("05_size_records.png", slide_measurement()),
+        ("05_measurement_records.png", slide_measurement()),
         ("06_ec_coupon_notice.png", slide_engagement()),
         ("07_admin_phase.png", slide_admin()),
     ]

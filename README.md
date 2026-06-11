@@ -2,6 +2,8 @@
 
 これは勇吉屋公式LINEの会員情報TOPとして使うLIFF風デモです。
 
+公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
+
 - `index.html`: 会員情報TOP画面
 - `styles.css`: LIFF風の画面デザイン
 - `app.js`: 誕生日から年齢・学年を自動表示するデモロジック
