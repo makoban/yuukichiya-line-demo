@@ -32,7 +32,6 @@ const initialMembers = [
     role: "代表者",
     gender: "女性",
     school: "",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-04-guardian.png",
   },
@@ -43,7 +42,6 @@ const initialMembers = [
     role: "生徒",
     gender: "女性",
     school: "豊田市立さくら中学校",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-01-student-girl.png",
   },
@@ -54,7 +52,6 @@ const initialMembers = [
     role: "生徒",
     gender: "男性",
     school: "豊田市立みどり小学校",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-02-student-boy.png",
   },
@@ -176,7 +173,6 @@ const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const genderInput = document.getElementById("genderInput");
 const schoolInput = document.getElementById("schoolInput");
-const phoneInput = document.getElementById("phoneInput");
 const addressInput = document.getElementById("addressInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
@@ -229,9 +225,12 @@ let lastReservation = null;
 let lastReservationMessage = "";
 let lastReservationFlexMessage = null;
 let lineProfile = null;
+let liffReadyPromise = null;
+let liffReady = false;
+let liffInitError = null;
 
 syncPointState(readPointState(), { silent: true });
-initLiff();
+liffReadyPromise = initLiff();
 
 function selectedMember() {
   return members.find((member) => member.id === selectedId) || members[0];
@@ -300,16 +299,18 @@ function renderRepresentative() {
 async function initLiff() {
   if (!lineConfig.liffId || !window.liff) {
     liffStatus.textContent = "勇吉屋 公式LINE";
-    return;
+    return false;
   }
 
   try {
     await liff.init({ liffId: lineConfig.liffId });
+    liffReady = true;
+    liffInitError = null;
     if (!liff.isLoggedIn()) {
       if (liff.isInClient?.()) {
         liff.login();
       }
-      return;
+      return true;
     }
     const profile = await liff.getProfile();
     lineProfile = profile;
@@ -321,9 +322,13 @@ async function initLiff() {
       }
       render();
     }
+    return true;
   } catch (error) {
+    liffReady = false;
+    liffInitError = error;
     liffStatus.textContent = "勇吉屋 公式LINE";
     console.warn("LIFF initialization failed", error);
+    return false;
   }
 }
 
@@ -361,7 +366,6 @@ function renderEditor() {
   birthdayInput.value = member.birthday;
   genderInput.value = member.gender || "未回答";
   schoolInput.value = member.school;
-  phoneInput.value = member.phone || "";
   addressInput.value = member.address || "";
 }
 
@@ -1172,7 +1176,44 @@ async function sendReservationLineMessage() {
     return;
   }
 
-  if (window.liff && liff.isInClient?.() && liff.isLoggedIn?.() && typeof liff.sendMessages === "function") {
+  setLineSendStatus("LINEへ予約確定リッチメッセージを送信中");
+
+  if (liffReadyPromise) {
+    await liffReadyPromise;
+  }
+
+  const hasLiff = Boolean(window.liff && lineConfig.liffId);
+
+  if (!hasLiff) {
+    await copyReservationMessageToClipboard("LINE送信にはLIFF ID設定が必要です。確認文はコピーしました。");
+    return;
+  }
+
+  if (!liffReady) {
+    const detail = liffInitError?.message ? ` (${liffInitError.message})` : "";
+    await copyReservationMessageToClipboard(`LINE連携の初期化に失敗しました${detail}。確認文はコピーしました。`);
+    return;
+  }
+
+  const inLineClient = Boolean(liff.isInClient?.());
+  const isLoggedIn = Boolean(liff.isLoggedIn?.());
+
+  if (!inLineClient) {
+    await copyReservationMessageToClipboard("LINEアプリ内のリッチメニューから開いた時だけLINEへ送信できます。確認文はコピーしました。");
+    return;
+  }
+
+  if (!isLoggedIn) {
+    setLineSendStatus("LINEログイン確認中です。もう一度予約確定または再送を押してください。", "warning");
+    try {
+      liff.login();
+    } catch (error) {
+      console.warn("LIFF login failed", error);
+    }
+    return;
+  }
+
+  if (typeof liff.sendMessages === "function") {
     try {
       await liff.sendMessages([lastReservationFlexMessage || { type: "text", text: lastReservationMessage }]);
       setLineSendStatus("LINEへ予約確定リッチメッセージを送信しました", "success");
@@ -1189,11 +1230,15 @@ async function sendReservationLineMessage() {
     }
   }
 
+  await copyReservationMessageToClipboard("LINEへの自動送信に失敗しました。確認文はコピーしました。LINEアプリ内から再送してください。");
+}
+
+async function copyReservationMessageToClipboard(message) {
   try {
     await navigator.clipboard?.writeText(lastReservationMessage);
-    setLineSendStatus("LINE送信にはLIFF IDとメッセージ送信権限、または予約API設定が必要です。確認文はコピーしました。", "warning");
+    setLineSendStatus(message, "warning");
   } catch (error) {
-    setLineSendStatus("LINE送信にはLIFF IDとメッセージ送信権限、または予約API設定が必要です。", "warning");
+    setLineSendStatus(message.replace("確認文はコピーしました。", "確認文のコピーもできませんでした。"), "warning");
   }
 }
 
@@ -1363,7 +1408,6 @@ nameInput.addEventListener("input", (event) => updateSelected("name", event.targ
 birthdayInput.addEventListener("input", (event) => updateSelected("birthday", event.target.value));
 genderInput.addEventListener("change", (event) => updateSelected("gender", event.target.value));
 schoolInput.addEventListener("input", (event) => updateSelected("school", event.target.value));
-phoneInput.addEventListener("input", (event) => updateSelected("phone", event.target.value));
 addressInput.addEventListener("input", (event) => updateSelected("address", event.target.value));
 
 photoInput.addEventListener("change", (event) => {
@@ -1388,7 +1432,6 @@ addMemberButton.addEventListener("click", () => {
     role: "生徒",
     gender: "未回答",
     school: "学校名を入力",
-    phone: members[0].phone || "",
     address: members[0].address || "",
     avatar: `./assets/avatars/${avatarFiles[(nextIndex + 4) % avatarFiles.length]}`,
   };
