@@ -32,7 +32,6 @@ const initialMembers = [
     role: "代表者",
     gender: "女性",
     school: "",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-04-guardian.png",
   },
@@ -43,7 +42,6 @@ const initialMembers = [
     role: "生徒",
     gender: "女性",
     school: "豊田市立さくら中学校",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-01-student-girl.png",
   },
@@ -54,7 +52,6 @@ const initialMembers = [
     role: "生徒",
     gender: "男性",
     school: "豊田市立みどり小学校",
-    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-02-student-boy.png",
   },
@@ -176,7 +173,6 @@ const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const genderInput = document.getElementById("genderInput");
 const schoolInput = document.getElementById("schoolInput");
-const phoneInput = document.getElementById("phoneInput");
 const addressInput = document.getElementById("addressInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
@@ -232,6 +228,9 @@ let lineProfile = null;
 let liffReadyPromise = null;
 let liffReady = false;
 let liffInitError = null;
+let remoteReservationCache = [];
+let remoteReservationLookupKey = "";
+let remoteReservationLoading = false;
 
 syncPointState(readPointState(), { silent: true });
 liffReadyPromise = initLiff();
@@ -311,8 +310,8 @@ async function initLiff() {
     liffReady = true;
     liffInitError = null;
     if (!liff.isLoggedIn()) {
-      if (liff.isInClient?.()) {
-        liff.login();
+      if (liff.isInClient?.() || shouldLoginForReservationApi()) {
+        liff.login({ redirectUri: window.location.href });
       }
       return true;
     }
@@ -370,7 +369,6 @@ function renderEditor() {
   birthdayInput.value = member.birthday;
   genderInput.value = member.gender || "未回答";
   schoolInput.value = member.school;
-  phoneInput.value = member.phone || "";
   addressInput.value = member.address || "";
 }
 
@@ -786,6 +784,21 @@ function isPastReservationSlot(dateValue, hour) {
   return hour <= new Date().getHours();
 }
 
+function reservationApiEnabled() {
+  return typeof lineConfig.reservationApiUrl === "string" && lineConfig.reservationApiUrl.startsWith("https://");
+}
+
+function isReservationRoute() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("screen") === "reservation") return true;
+  const liffState = params.get("liff.state") || "";
+  return liffState.includes("screen=reservation");
+}
+
+function shouldLoginForReservationApi() {
+  return reservationApiEnabled() && isReservationRoute();
+}
+
 function demoReservationSeeds() {
   const tomorrow = toDateInputValue(addDays(new Date(), 1));
   const twoDaysLater = toDateInputValue(addDays(new Date(), 2));
@@ -849,6 +862,58 @@ function isReservationTaken(reservations, date, store, hour) {
   return reservations.some((reservation) => reservation.date === date && reservation.store === store && Number(reservation.hour) === hour);
 }
 
+function reservationLookupKey(date = reservationDateInput.value, store = reservationStoreInput.value) {
+  return `${date}::${store}`;
+}
+
+function currentReservations() {
+  const localReservations = reservationApiEnabled() ? [] : readReservations();
+  return [...localReservations, ...remoteReservationCache];
+}
+
+function reservationApiUrlWithParams() {
+  const url = new URL(lineConfig.reservationApiUrl);
+  url.searchParams.set("date", reservationDateInput.value);
+  url.searchParams.set("store", reservationStoreInput.value);
+  return url.toString();
+}
+
+async function refreshRemoteReservations() {
+  if (!reservationApiEnabled() || !reservationDateInput.value || !reservationStoreInput.value) {
+    remoteReservationCache = [];
+    remoteReservationLookupKey = "";
+    return;
+  }
+
+  const key = reservationLookupKey();
+  remoteReservationLookupKey = key;
+  remoteReservationLoading = true;
+  renderReservationSlots();
+
+  try {
+    const response = await fetch(reservationApiUrlWithParams(), {
+      headers: { Accept: "application/json" },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.message || `予約APIで空き枠を取得できませんでした: ${response.status}`);
+    }
+    if (remoteReservationLookupKey === key) {
+      remoteReservationCache = Array.isArray(data.reservations) ? data.reservations : [];
+    }
+  } catch (error) {
+    console.warn("Reservation availability fetch failed", error);
+    if (remoteReservationLookupKey === key) {
+      slotSummaryText.textContent = "空き枠取得に失敗しました";
+    }
+  } finally {
+    if (remoteReservationLookupKey === key) {
+      remoteReservationLoading = false;
+      renderReservationSlots();
+    }
+  }
+}
+
 function renderReservationMemberOptions() {
   const current = reservationMemberInput.value;
   const childMembers = members.filter((member, index) => index > 0 || member.role === "生徒");
@@ -874,7 +939,7 @@ function renderReservationStores() {
 function renderReservationSlots() {
   const date = reservationDateInput.value;
   const store = reservationStoreInput.value;
-  const reservations = readReservations();
+  const reservations = currentReservations();
   let availableCount = 0;
 
   if (selectedReservationHour !== null) {
@@ -888,10 +953,10 @@ function renderReservationSlots() {
     .map((hour) => {
       const taken = isReservationTaken(reservations, date, store, hour);
       const past = isPastReservationSlot(date, hour);
-      const disabled = taken || past;
+      const disabled = taken || past || remoteReservationLoading;
       const selected = selectedReservationHour === hour;
       if (!disabled) availableCount += 1;
-      const stateText = taken ? "予約済み" : past ? "受付終了" : "空き";
+      const stateText = remoteReservationLoading ? "確認中" : taken ? "予約済み" : past ? "受付終了" : "空き";
       return `
         <button class="slot-button${selected ? " is-selected" : ""}" type="button" data-hour="${hour}"${disabled ? " disabled" : ""}>
           ${timeRangeLabel(hour)}
@@ -901,7 +966,7 @@ function renderReservationSlots() {
     })
     .join("");
 
-  slotSummaryText.textContent = `${availableCount}枠空き`;
+  slotSummaryText.textContent = remoteReservationLoading ? "空き枠を確認中" : `${availableCount}枠空き`;
   confirmReservationButton.disabled = selectedReservationHour === null;
 }
 
@@ -922,6 +987,7 @@ function openReservationScreen() {
   document.body.classList.add("reservation-open");
   renderMeasurementRecords();
   renderReservationSlots();
+  refreshRemoteReservations();
 }
 
 function closeReservationScreen() {
@@ -949,6 +1015,7 @@ function buildReservationCandidate(hour) {
     memberNumber,
     note: reservationNoteInput.value.trim(),
     lineUserId: lineProfile?.userId || "",
+    lineAccessToken: window.liff?.getAccessToken?.() || "",
     createdAt: new Date().toISOString(),
   };
 }
@@ -974,7 +1041,8 @@ async function reserveOnServer(candidate) {
   if (!response.ok) {
     throw new Error(data.message || `予約APIでエラーが発生しました: ${response.status}`);
   }
-  return { ...candidate, ...(data.reservation || {}), lineMessageSent: Boolean(data.lineMessageSent) };
+  const { lineAccessToken, ...publicCandidate } = candidate;
+  return { ...publicCandidate, ...(data.reservation || {}), lineMessageSent: Boolean(data.lineMessageSent) };
 }
 
 function reserveLocally(candidate) {
@@ -993,10 +1061,29 @@ async function confirmReservation() {
 
   confirmReservationButton.disabled = true;
   slotSummaryText.textContent = "予約を確認中";
+
+  if (reservationApiEnabled()) {
+    if (liffReadyPromise) {
+      await liffReadyPromise;
+    }
+    const canSendLineIdentity = Boolean(lineProfile?.userId || window.liff?.getAccessToken?.());
+    if (!canSendLineIdentity) {
+      setLineSendStatus("LINE通知のためログイン確認を開きます。ログイン後にもう一度予約を確定してください。", "warning");
+      try {
+        window.liff?.login?.({ redirectUri: window.location.href });
+      } catch (error) {
+        console.warn("LIFF login failed", error);
+      }
+      confirmReservationButton.disabled = false;
+      slotSummaryText.textContent = "LINEログイン確認中";
+      return;
+    }
+  }
+
   const candidate = buildReservationCandidate(selectedReservationHour);
 
   try {
-    const reservation = lineConfig.reservationApiUrl
+    const reservation = reservationApiEnabled()
       ? await reserveOnServer(candidate)
       : reserveLocally(candidate);
     lastReservation = reservation;
@@ -1009,6 +1096,7 @@ async function confirmReservation() {
   } catch (error) {
     if (error.code === "slot_taken") {
       selectedReservationHour = null;
+      await refreshRemoteReservations();
       renderReservationSlots();
       slotSummaryText.textContent = "この時間は予約済みです";
       return;
@@ -1016,6 +1104,9 @@ async function confirmReservation() {
     slotSummaryText.textContent = "予約できませんでした";
     setLineSendStatus(error.message || "予約処理でエラーが発生しました", "warning");
   } finally {
+    if (reservationApiEnabled()) {
+      await refreshRemoteReservations();
+    }
     renderReservationSlots();
   }
 }
@@ -1360,10 +1451,12 @@ reservationCloseButton?.addEventListener("click", returnToLine);
 reservationDateInput.addEventListener("change", () => {
   selectedReservationHour = null;
   renderReservationSlots();
+  refreshRemoteReservations();
 });
 reservationStoreInput.addEventListener("change", () => {
   selectedReservationHour = null;
   renderReservationSlots();
+  refreshRemoteReservations();
 });
 slotGrid.addEventListener("click", (event) => {
   const button = event.target.closest(".slot-button");
@@ -1413,7 +1506,6 @@ nameInput.addEventListener("input", (event) => updateSelected("name", event.targ
 birthdayInput.addEventListener("input", (event) => updateSelected("birthday", event.target.value));
 genderInput.addEventListener("change", (event) => updateSelected("gender", event.target.value));
 schoolInput.addEventListener("input", (event) => updateSelected("school", event.target.value));
-phoneInput.addEventListener("input", (event) => updateSelected("phone", event.target.value));
 addressInput.addEventListener("input", (event) => updateSelected("address", event.target.value));
 
 photoInput.addEventListener("change", (event) => {
@@ -1438,7 +1530,6 @@ addMemberButton.addEventListener("click", () => {
     role: "生徒",
     gender: "未回答",
     school: "学校名を入力",
-    phone: members[0].phone || "",
     address: members[0].address || "",
     avatar: `./assets/avatars/${avatarFiles[(nextIndex + 4) % avatarFiles.length]}`,
   };

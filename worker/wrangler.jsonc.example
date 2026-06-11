@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yuukichiya-reservation-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-06-11",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "yuukichiya_reservations",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://makoban.github.io",
+    "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

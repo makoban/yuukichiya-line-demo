@@ -10,7 +10,9 @@
 - 1時間単位の空き枠選択
 - 予約済み枠の選択不可表示
 - 予約確定後のLINE Flex Messageリッチメッセージ送信処理
-- gpt-image2生成アイコン12種
+- Cloudflare Worker + D1用の予約API雛形
+- 予約APIからMessaging API Push MessageでLINEへ届ける本番経路
+- gpt-image2生成アイコン20種
 - LINEリッチメニュー画像
 - Messaging API用リッチメニュー投入スクリプト
 
@@ -20,7 +22,7 @@
 2. LINE DevelopersでLIFFアプリを作成する
 3. `config.js` の `liffId` にLIFF IDを入れる
 4. LINE Official AccountのMessaging APIチャネルアクセストークンを用意する
-5. 予約APIを用意し、`config.js` の `reservationApiUrl` に設定する
+5. `worker/` の予約APIをCloudflare Workersへデプロイし、`config.js` の `reservationApiUrl` に設定する
 6. `scripts/apply-rich-menu.mjs` で6分割リッチメニューを反映する
 
 ## 採寸予約の本番要件
@@ -31,7 +33,7 @@
 - 予約確定はDBトランザクション内で作成する
 - 既に埋まっている枠はHTTP 409で返す
 - LIFFのID tokenまたはaccess tokenをサーバーで検証してLINEユーザーを確定する
-- 予約作成後、Messaging APIで利用者へFlex Messageの確認リッチメッセージを送る
+- 予約作成後、ココトモと同じくサーバー側のチャネルアクセストークンでMessaging APIを呼び、利用者へFlex Messageの確認リッチメッセージをPush送信する
 
 予約APIの最小レスポンス例:
 
@@ -77,3 +79,16 @@ node scripts/apply-rich-menu.mjs
 
 採寸予約は未指定なら `https://公開したURL/?screen=reservation` を開く。
 チャネルアクセストークンはファイルに保存しない。
+
+## 予約APIデプロイ
+
+```bash
+cd worker
+cp wrangler.jsonc.example wrangler.jsonc
+npx wrangler d1 create yuukichiya_reservations
+npx wrangler d1 execute yuukichiya_reservations --file=./schema.sql
+npx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
+npx wrangler deploy
+```
+
+デプロイ後、Worker URLに `/reservations` を付けて `config.js` の `reservationApiUrl` に設定する。

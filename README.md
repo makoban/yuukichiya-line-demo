@@ -10,10 +10,11 @@
 - `styles.css`: LIFF風の画面デザイン
 - `app.js`: 会員情報編集、ポイントQR、店舗側ポイント増減、採寸予約、LINE確認文送信のデモロジック
 - `staff.js`: 店舗側のポイント増減、履歴追加、顧客画面への即時反映デモロジック
-- `assets/avatars/`: gpt-image2生成の選択アイコン
+- `assets/avatars/`: gpt-image2生成の選択アイコン20種
 - `config.js`: LIFF IDや外部リンクの設定
 - `rich-menu/`: LINE公式リッチメニュー画像と設定テンプレート
 - `scripts/`: Messaging APIでリッチメニューを投入するスクリプト
+- `worker/`: 採寸予約APIとLINE Push通知用のCloudflare Worker
 
 本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE公式リッチメニューから `?screen=member` / `?screen=points` / 採寸予約LIFF URLを直接開く構成にします。
 
@@ -29,9 +30,10 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
 - 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE Flex Messageのリッチメッセージとして送信
-- 通常ブラウザでは確認文をコピーし、LIFFのメッセージ送信権限または予約API接続後にLINE送信
+- 通常ブラウザで確実にLINEへ届ける場合は、`worker/` の予約APIからMessaging APIのPush Messageで送信
+- LIFF単体の `sendMessages` は、LINEアプリ内のトークから開いた場合だけの補助経路
 
-静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に予約APIを設定し、DB側で `date + store + hour` を一意制約にして二重予約を防ぎます。LINEへ確実に届く通知にする場合は、予約API側からMessaging APIでFlex Messageを送信します。
+静的デモでは `localStorage` で予約済み枠を保持します。本番では `config.js` の `reservationApiUrl` に `worker/` の予約APIを設定し、D1側で `date + store + hour` を一意制約にして二重予約を防ぎます。LINEへ確実に届く通知は、ココトモと同じくサーバー側にチャネルアクセストークンを置いてMessaging APIでFlex MessageをPush送信します。
 
 ## LINE接続
 
@@ -48,6 +50,21 @@ window.YUUKICHIYA_LINE_CONFIG = {
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```
+
+## 予約APIとLINE Push通知
+
+`worker/` にCloudflare Worker + D1用の予約APIを追加しています。デプロイ後、`config.js` の `reservationApiUrl` をWorkerの `/reservations` URLに設定します。
+
+```bash
+cd worker
+cp wrangler.jsonc.example wrangler.jsonc
+npx wrangler d1 create yuukichiya_reservations
+npx wrangler d1 execute yuukichiya_reservations --file=./schema.sql
+npx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
+npx wrangler deploy
+```
+
+GitHub Pagesや `config.js` にLINEチャネルアクセストークンは置きません。ココトモと同じく、サーバー側のsecretからMessaging APIを呼びます。
 
 ## リッチメニュー投入
 
