@@ -413,13 +413,6 @@ async function initLiff() {
     const profile = await liff.getProfile();
     lineProfile = profile;
     liffStatus.textContent = "LINE連携中";
-    if (profile?.displayName) {
-      members[0].name = profile.displayName;
-      if (profile.pictureUrl) {
-        members[0].avatar = profile.pictureUrl;
-      }
-      render();
-    }
     return true;
   } catch (error) {
     liffReady = false;
