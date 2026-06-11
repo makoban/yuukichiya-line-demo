@@ -208,6 +208,7 @@ const slotGrid = document.getElementById("slotGrid");
 const slotSummaryText = document.getElementById("slotSummaryText");
 const confirmReservationButton = document.getElementById("confirmReservationButton");
 const reservationConfirmation = document.getElementById("reservationConfirmation");
+const reservationLatestKicker = document.getElementById("reservationLatestKicker");
 const reservationConfirmedTime = document.getElementById("reservationConfirmedTime");
 const reservationConfirmationDetails = document.getElementById("reservationConfirmationDetails");
 const lineSendStatus = document.getElementById("lineSendStatus");
@@ -946,14 +947,14 @@ function renderReservationStatus() {
   reservationStatusList.innerHTML = `
     ${messageHtml}
     ${sortedReservations(reservations)
-      .map((reservation) => {
+      .map((reservation, index) => {
         const hour = Number(reservation.hour);
         const past = isPastReservationSlot(reservation.date, hour);
         const isCancelling = cancellingReservationId === reservation.id;
         return `
           <article class="reservation-status-item">
             <div class="reservation-status-main">
-              <span class="reservation-status-badge">${past ? "受付終了" : "予約中"}</span>
+              <span class="reservation-status-badge">${index + 1}番目・${past ? "受付終了" : "予約中"}</span>
               <strong>${escapeHtml(formatReservationDate(reservation.date))} ${escapeHtml(timeRangeLabel(hour))}</strong>
               <dl>
                 ${reservationDisplayRows(reservation)
@@ -1036,6 +1037,9 @@ async function cancelReservation(reservationId) {
 
   cancellingReservationId = reservationId;
   myReservationsMessage = "";
+  const targetReservation = (reservationApiEnabled() ? myReservationCache : readReservations()).find(
+    (reservation) => reservation.id === reservationId,
+  );
   renderReservationStatus();
 
   try {
@@ -1061,7 +1065,6 @@ async function cancelReservation(reservationId) {
     }
 
     if (lastReservation?.id === reservationId) {
-      reservationConfirmation.hidden = true;
       lastReservation = null;
       lastReservationMessage = "";
       lastReservationFlexMessage = null;
@@ -1069,9 +1072,18 @@ async function cancelReservation(reservationId) {
     await refreshRemoteReservations();
     await refreshMyReservations();
     myReservationsMessage = "予約をキャンセルしました";
+    showReservationCancellation(targetReservation);
   } catch (error) {
     console.warn("Reservation cancel failed", error);
     myReservationsMessage = error.message || "予約をキャンセルできませんでした";
+    showReservationLatestStatus({
+      kicker: "キャンセルできませんでした",
+      heading: myReservationsMessage,
+      rows: [["状態", "予約状況欄で内容を確認してください"]],
+      statusMessage: myReservationsMessage,
+      tone: "warning",
+      canResend: false,
+    });
   } finally {
     cancellingReservationId = "";
     renderReservationSlots();
@@ -1182,8 +1194,7 @@ function openReservationScreen() {
     reservationDateInput.value = defaultReservationDate();
   }
   selectedReservationHour = null;
-  reservationConfirmation.hidden = true;
-  setLineSendStatus("LINEメッセージを準備中");
+  resetReservationLatestStatus();
   reservationScreen.hidden = false;
   document.body.classList.add("reservation-open");
   renderReservationStatus();
@@ -1315,8 +1326,46 @@ async function confirmReservation() {
 }
 
 function showReservationConfirmation(reservation) {
-  reservationConfirmedTime.textContent = `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`;
-  reservationConfirmationDetails.innerHTML = reservationDisplayRows(reservation)
+  showReservationLatestStatus({
+    kicker: "予約確定しました",
+    heading: `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`,
+    rows: reservationDisplayRows(reservation),
+    statusMessage: "LINEメッセージを準備中",
+    tone: "",
+    canResend: true,
+  });
+  reservationConfirmation.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function showReservationCancellation(reservation) {
+  const heading = reservation
+    ? `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`
+    : "キャンセル済み";
+  showReservationLatestStatus({
+    kicker: "予約キャンセルしました",
+    heading,
+    rows: reservation ? reservationDisplayRows(reservation) : [["状態", "予約をキャンセルしました"]],
+    statusMessage: "予約状況欄を更新しました",
+    tone: "success",
+    canResend: false,
+  });
+}
+
+function resetReservationLatestStatus() {
+  showReservationLatestStatus({
+    kicker: "待機中",
+    heading: "予約後にここへ表示",
+    rows: [["表示内容", "予約確定・キャンセルの結果"]],
+    statusMessage: "最新の操作結果を表示します",
+    tone: "",
+    canResend: false,
+  });
+}
+
+function showReservationLatestStatus({ kicker, heading, rows, statusMessage, tone = "", canResend = false }) {
+  reservationLatestKicker.textContent = kicker;
+  reservationConfirmedTime.textContent = heading;
+  reservationConfirmationDetails.innerHTML = rows
     .map(([label, value]) => `
       <div>
         <dt>${escapeHtml(label)}</dt>
@@ -1324,8 +1373,8 @@ function showReservationConfirmation(reservation) {
       </div>
     `)
     .join("");
-  reservationConfirmation.hidden = false;
-  reservationConfirmation.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  setLineSendStatus(statusMessage, tone);
+  sendLineMessageButton.disabled = !canResend;
 }
 
 function reservationDateTimeText(reservation) {

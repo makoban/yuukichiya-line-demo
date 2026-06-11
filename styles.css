@@ -1421,6 +1421,15 @@ textarea:focus {
   display: none;
 }
 
+.reservation-latest-title {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.reservation-latest-title h3 {
+  font-size: 18px;
+}
+
 .confirmation-mark {
   width: 52px;
   height: 52px;
@@ -1506,6 +1515,13 @@ textarea:focus {
   min-height: 48px;
   background: #152033;
   box-shadow: 0 12px 24px rgba(21, 32, 51, 0.18);
+}
+
+.send-line-button:disabled {
+  color: #94a3b8;
+  background: #e8edf4;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .avatar-sheet {
