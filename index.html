@@ -6,9 +6,9 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-liff-route" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-measurement-icons" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="./config.js?v=20260611-liff-route"></script>
+    <script src="./config.js?v=20260611-measurement-icons"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
@@ -151,30 +151,27 @@
             </button>
             <div>
               <p>勇吉屋 採寸記録</p>
-              <h2>最新記録と履歴</h2>
+              <h2>採寸予約と履歴</h2>
             </div>
           </header>
 
           <section class="measurement-record-card" aria-label="採寸記録">
             <div class="section-title-row">
               <div>
-                <h3>最新の登録メンバー</h3>
-                <p class="section-caption">いつ・誰が・何を採寸したかを一覧で確認</p>
+                <h3><span class="section-title-icon" aria-hidden="true">✓</span>最新欄</h3>
+                <p class="section-caption">直近の採寸内容をメンバーごとに確認</p>
               </div>
-              <span class="record-sync-badge">店頭入力</span>
+              <span class="record-sync-badge">最新記録</span>
             </div>
             <div class="measurement-latest-list" id="measurementLatestList"></div>
-
-            <div class="measurement-history-head">
-              <h3>履歴</h3>
-              <span>新しい順</span>
-            </div>
-            <div class="measurement-history-list" id="measurementHistoryList"></div>
           </section>
 
           <section class="reservation-card" aria-label="予約内容">
             <div class="section-title-row">
-              <h3>採寸予約</h3>
+              <div>
+                <h3><span class="section-title-icon" aria-hidden="true">▣</span>最新予約欄</h3>
+                <p class="section-caption">空いている1時間枠を選択</p>
+              </div>
               <span class="reservation-note-chip">空き枠確認</span>
             </div>
             <div class="reservation-form-grid">
@@ -220,6 +217,14 @@
               LINEメッセージを再送
             </button>
           </section>
+
+          <section class="measurement-record-card measurement-history-card" aria-label="採寸履歴">
+            <div class="measurement-history-head">
+              <h3><span class="section-title-icon" aria-hidden="true">↻</span>履歴欄</h3>
+              <span>新しい順</span>
+            </div>
+            <div class="measurement-history-list" id="measurementHistoryList"></div>
+          </section>
         </div>
       </section>
 
@@ -240,6 +245,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-liff-route"></script>
+    <script src="./app.js?v=20260611-measurement-icons"></script>
   </body>
 </html>

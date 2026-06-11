@@ -580,8 +580,45 @@ function formatMeasurementDate(value) {
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
+function measurementMember(memberId) {
+  return members.find((member) => member.id === memberId) || null;
+}
+
+function measurementMemberIndex(memberId) {
+  return members.findIndex((member) => member.id === memberId);
+}
+
 function measurementMemberName(memberId) {
-  return members.find((member) => member.id === memberId)?.name || "登録メンバー";
+  return measurementMember(memberId)?.name || "登録メンバー";
+}
+
+function measurementMemberAvatar(memberId) {
+  return measurementMember(memberId)?.avatar || "./assets/avatars/avatar-04-guardian.png";
+}
+
+function measurementMemberKind(memberId) {
+  const index = measurementMemberIndex(memberId);
+  return index >= 0 ? memberKindLabel(members[index], index) : "登録メンバー";
+}
+
+function measurementItemKind(item) {
+  const value = String(item || "");
+  if (/体操|ハーフ|シャツ|ポロ|Tシャツ/i.test(value)) {
+    return { icon: "👕", label: "体操服" };
+  }
+  if (/ズボン|パンツ|スラックス/i.test(value)) {
+    return { icon: "👖", label: "ズボン" };
+  }
+  if (/ジャケット|ブレザー|上着|袖丈/i.test(value)) {
+    return { icon: "🧥", label: "上着" };
+  }
+  if (/スカート/i.test(value)) {
+    return { icon: "◒", label: "スカート" };
+  }
+  if (/制服|夏服|冬服/i.test(value)) {
+    return { icon: "👔", label: "制服" };
+  }
+  return { icon: "✦", label: "衣類" };
 }
 
 function sortMeasurementRecords(records) {
@@ -610,18 +647,33 @@ function renderMeasurementRecords() {
         return `
           <article class="measurement-latest-item is-empty">
             <div class="measurement-member-row">
-              <strong>${escapeHtml(member.name)}</strong>
-              <span>${escapeHtml(kind)}</span>
+              <span class="measurement-person-row">
+                <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
+                <span class="measurement-person-copy">
+                  <strong>${escapeHtml(member.name)}</strong>
+                  <span>${escapeHtml(kind)}</span>
+                </span>
+              </span>
             </div>
             <p>まだ採寸記録がありません</p>
           </article>
         `;
       }
+      const itemKind = measurementItemKind(record.item);
       return `
         <article class="measurement-latest-item">
           <div class="measurement-member-row">
-            <strong>${escapeHtml(member.name)}</strong>
-            <span>${escapeHtml(kind)}</span>
+            <span class="measurement-person-row">
+              <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
+              <span class="measurement-person-copy">
+                <strong>${escapeHtml(member.name)}</strong>
+                <span>${escapeHtml(kind)}</span>
+              </span>
+            </span>
+            <span class="measurement-item-chip">
+              <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+              ${escapeHtml(itemKind.label)}
+            </span>
           </div>
           <dl class="measurement-latest-meta">
             <div>
@@ -630,7 +682,12 @@ function renderMeasurementRecords() {
             </div>
             <div>
               <dt>何を</dt>
-              <dd>${escapeHtml(record.item)}</dd>
+              <dd>
+                <span class="measurement-item-inline">
+                  <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+                  ${escapeHtml(record.item)}
+                </span>
+              </dd>
             </div>
           </dl>
           <p>${escapeHtml(measurementValuesText(record))}</p>
@@ -641,15 +698,35 @@ function renderMeasurementRecords() {
     .join("");
 
   measurementHistoryList.innerHTML = sortMeasurementRecords(measurementRecords)
-    .map((record) => `
-      <div class="measurement-history-item">
-        <div>
-          <strong>${escapeHtml(record.item)}</strong>
-          <span>${escapeHtml(formatMeasurementDate(record.measuredAt))} / ${escapeHtml(measurementMemberName(record.memberId))} / ${escapeHtml(record.staff)}</span>
-          <small>${escapeHtml(measurementValuesText(record, 4))}</small>
+    .map((record) => {
+      const itemKind = measurementItemKind(record.item);
+      return `
+        <div class="measurement-history-item">
+          <span class="measurement-history-clothing" aria-label="${escapeHtml(itemKind.label)}">
+            ${escapeHtml(itemKind.icon)}
+          </span>
+          <div class="measurement-history-main">
+            <div class="measurement-history-title">
+              <strong>${escapeHtml(record.item)}</strong>
+              <span class="measurement-item-chip">
+                <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+                ${escapeHtml(itemKind.label)}
+              </span>
+            </div>
+            <div class="measurement-history-meta">
+              <span class="measurement-history-person">
+                <img src="${escapeHtml(measurementMemberAvatar(record.memberId))}" alt="${escapeHtml(measurementMemberName(record.memberId))}のアイコン" />
+                <span>${escapeHtml(measurementMemberName(record.memberId))}</span>
+              </span>
+              <span class="measurement-history-date">${escapeHtml(formatMeasurementDate(record.measuredAt))}</span>
+              <span class="measurement-history-staff">${escapeHtml(record.staff)}</span>
+              <span class="measurement-history-kind">${escapeHtml(measurementMemberKind(record.memberId))}</span>
+            </div>
+            <small>${escapeHtml(measurementValuesText(record, 4))}</small>
+          </div>
         </div>
-      </div>
-    `)
+      `;
+    })
     .join("");
 }
 

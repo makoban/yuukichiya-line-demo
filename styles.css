@@ -298,6 +298,33 @@ h3 {
   margin-bottom: 12px;
 }
 
+.section-title-row > div {
+  min-width: 0;
+}
+
+.section-title-row h3,
+.measurement-history-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.section-title-icon {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: #effbf4;
+  font-size: 15px;
+  font-weight: 1000;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(6, 169, 68, 0.16);
+}
+
 .mini-button,
 .photo-button,
 .sheet-close {
@@ -889,19 +916,42 @@ textarea:focus {
 
 .measurement-member-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
-.measurement-member-row strong {
+.measurement-person-row {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.measurement-person-avatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: #e8f4ed;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.measurement-person-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.measurement-person-copy strong {
   min-width: 0;
   font-size: 16px;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
-.measurement-member-row span,
+.measurement-person-copy > span,
 .measurement-staff {
   color: var(--green-dark);
   font-size: 12px;
@@ -938,6 +988,40 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.measurement-item-inline,
+.measurement-item-chip {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.measurement-item-chip {
+  flex: 0 0 auto;
+  min-height: 28px;
+  max-width: 46%;
+  padding: 3px 8px 3px 4px;
+  border-radius: 999px;
+  color: #075985;
+  background: #eaf6ff;
+  font-size: 12px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.measurement-clothing-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9px;
+  background: white;
+  font-size: 14px;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(11, 141, 227, 0.12);
+}
+
 .measurement-latest-item p {
   color: #334155;
   font-size: 13px;
@@ -971,6 +1055,11 @@ textarea:focus {
   font-weight: 900;
 }
 
+.measurement-history-card {
+  border-color: rgba(11, 141, 227, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
 .measurement-history-list {
   display: grid;
   gap: 8px;
@@ -978,7 +1067,9 @@ textarea:focus {
 
 .measurement-history-item {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
   min-height: 58px;
   padding: 10px 12px;
   border-radius: 16px;
@@ -1013,6 +1104,84 @@ textarea:focus {
   font-size: 12px;
   font-weight: 900;
   line-height: 1.35;
+}
+
+.measurement-history-clothing {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #eaf6ff;
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(11, 141, 227, 0.12);
+}
+
+.measurement-history-main {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.measurement-history-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.measurement-history-title strong {
+  min-width: 0;
+}
+
+.measurement-history-meta {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.measurement-history-person,
+.measurement-history-date,
+.measurement-history-staff,
+.measurement-history-kind {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.measurement-history-person {
+  max-width: 100%;
+  color: var(--green-dark);
+}
+
+.measurement-history-person img {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: #e8f4ed;
+}
+
+.measurement-history-person span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.measurement-history-kind {
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: rgba(6, 169, 68, 0.09);
 }
 
 .reservation-form-grid {
