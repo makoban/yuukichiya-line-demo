@@ -93,6 +93,7 @@ const schoolInput = document.getElementById("schoolInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
 const liffStatus = document.getElementById("liffStatus");
+const lineBackButton = document.getElementById("lineBackButton");
 const lineTalkScreen = document.getElementById("lineTalkScreen");
 const memberServiceScreen = document.getElementById("memberServiceScreen");
 const memberCloseButton = document.getElementById("memberCloseButton");
@@ -452,6 +453,26 @@ function closePointsScreen() {
   pointsScreen.hidden = true;
   document.body.classList.remove("points-open");
   lineTalkScreen.hidden = false;
+}
+
+function returnToLine(event) {
+  event?.preventDefault();
+  const officialLineUrl = lineConfig.officialLineUrl || "https://lin.ee/7byeeeA";
+
+  try {
+    if (
+      window.liff &&
+      typeof window.liff.closeWindow === "function" &&
+      (!window.liff.isInClient || window.liff.isInClient())
+    ) {
+      window.liff.closeWindow();
+      return;
+    }
+  } catch (error) {
+    console.warn("LIFF closeWindow failed", error);
+  }
+
+  window.location.href = officialLineUrl;
 }
 
 function escapeHtml(value) {
@@ -904,12 +925,13 @@ function render() {
   }
 }
 
+lineBackButton?.addEventListener("click", returnToLine);
 memberMenuButton.addEventListener("click", openMemberService);
-memberCloseButton.addEventListener("click", closeMemberService);
+memberCloseButton.addEventListener("click", returnToLine);
 pointsMenuButton.addEventListener("click", openPointsScreen);
-pointsCloseButton.addEventListener("click", closePointsScreen);
+pointsCloseButton.addEventListener("click", returnToLine);
 reservationMenuButton.addEventListener("click", openReservationScreen);
-reservationCloseButton.addEventListener("click", closeReservationScreen);
+reservationCloseButton.addEventListener("click", returnToLine);
 reservationDateInput.addEventListener("change", () => {
   selectedReservationHour = null;
   renderReservationSlots();
