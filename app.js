@@ -1249,6 +1249,44 @@ function visibleLocalReservations() {
   return sortedReservations(readReservations().filter((reservation) => !reservation.demoSeed));
 }
 
+function reservationChildMember(reservation) {
+  return (
+    members.find((member) => member.id === reservation.childId) ||
+    members.find((member) => member.name === reservation.childName) ||
+    null
+  );
+}
+
+function reservationAvatarMarkup(reservation) {
+  const member = reservationChildMember(reservation);
+  if (member?.avatar) {
+    return `<img src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />`;
+  }
+  const name = String(reservation.childName || "予").trim();
+  return `<span>${escapeHtml(name.slice(0, 1) || "予")}</span>`;
+}
+
+function reservationRowIcon(label) {
+  const icons = {
+    受付番号: "#",
+    店舗: "🏬",
+    対象: "👤",
+    保護者: "✓",
+    会員番号: "ID",
+    メモ: "✎",
+    状態: "●",
+  };
+  return icons[label] || "•";
+}
+
+function slotStateIcon({ loading, taken, past, selected }) {
+  if (loading) return "…";
+  if (selected) return "✓";
+  if (taken) return "×";
+  if (past) return "–";
+  return "◎";
+}
+
 function renderReservationStatus() {
   if (!reservationStatusList) return;
 
@@ -1287,15 +1325,20 @@ function renderReservationStatus() {
         const isCancelling = cancellingReservationId === reservation.id;
         return `
           <article class="reservation-status-item">
+            <div class="reservation-status-avatar" aria-hidden="true">
+              ${reservationAvatarMarkup(reservation)}
+            </div>
             <div class="reservation-status-main">
-              <span class="reservation-status-badge">${index + 1}番目・${past ? "受付終了" : "予約中"}</span>
-              <strong>${escapeHtml(formatReservationDate(reservation.date))} ${escapeHtml(timeRangeLabel(hour))}</strong>
+              <div class="reservation-status-head">
+                <span class="reservation-status-badge">${index + 1}番目・${past ? "受付終了" : "予約中"}</span>
+                <strong><span aria-hidden="true">📅</span>${escapeHtml(formatReservationDate(reservation.date))} ${escapeHtml(timeRangeLabel(hour))}</strong>
+              </div>
               <dl>
                 ${reservationDisplayRows(reservation)
                   .map(
                     ([label, value]) => `
                       <div>
-                        <dt>${escapeHtml(label)}</dt>
+                        <dt><span class="reservation-row-icon" aria-hidden="true">${escapeHtml(reservationRowIcon(label))}</span>${escapeHtml(label)}</dt>
                         <dd>${escapeHtml(value)}</dd>
                       </div>
                     `,
@@ -1504,9 +1547,10 @@ function renderReservationSlots() {
       const selected = selectedReservationHour === hour;
       if (!disabled) availableCount += 1;
       const stateText = remoteReservationLoading ? "確認中" : taken ? "予約済み" : past ? "受付終了" : "空き";
+      const stateIcon = slotStateIcon({ loading: remoteReservationLoading, taken, past, selected });
       return `
         <button class="slot-button${selected ? " is-selected" : ""}" type="button" data-hour="${hour}"${disabled ? " disabled" : ""}>
-          ${timeRangeLabel(hour)}
+          <strong><span class="slot-state-icon" aria-hidden="true">${escapeHtml(stateIcon)}</span>${timeRangeLabel(hour)}</strong>
           <span>${stateText}</span>
         </button>
       `;
@@ -1715,7 +1759,7 @@ function showReservationResultStatus({
   reservationConfirmationDetails.innerHTML = rows
     .map(([label, value]) => `
       <div>
-        <dt>${escapeHtml(label)}</dt>
+        <dt><span class="reservation-row-icon" aria-hidden="true">${escapeHtml(reservationRowIcon(label))}</span>${escapeHtml(label)}</dt>
         <dd>${escapeHtml(value)}</dd>
       </div>
     `)

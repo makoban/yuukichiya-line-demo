@@ -3,7 +3,7 @@
 これは勇吉屋公式LINEのリッチメニュー起点で、会員照会・ポイント・採寸予約・採寸履歴を開くLIFF風デモです。
 
 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
-採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements`
+採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split`
 採寸履歴ページURL: `https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records`
 
 - `index.html`: LINEトーク画面 + リッチメニュー + 顧客側LIFF風画面
@@ -27,12 +27,12 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸予約デモ
 
-最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements` で採寸予約画面を開けます。
+最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split` で採寸予約画面を開けます。
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
 - 予約画面の上部に本人の予約状況を表示し、同じ画面からキャンセル可能
-- 最新状況欄はメンバーごとの最新寸法情報を表示し、採寸記録の履歴一覧はこの画面に出さない
+- 予約画面は「予約状況欄」と「予約欄」の2つに整理
 - 予約確定後に日時、店舗、対象者、会員番号、受付番号をLINE Flex Messageのリッチメッセージとして送信
 - リッチメッセージのボタンは「予約状況確認」として予約画面へ戻る導線
 - 通常ブラウザで確実にLINEへ届ける場合は、`worker/` の予約APIからMessaging APIのPush Messageで送信
@@ -45,6 +45,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 リッチメニュー下段左、または `?screen=measurement-records` で採寸履歴ページを開けます。
 
 - 誰が買ったか: 会員アイコンと名前で表示
+- 最新の採寸情報: メンバーごとの最新寸法を上部に表示
 - 何を買ったか: 洋服の種類アイコン、購入品名、分類チップで表示
 - いつ買ったか: 購入日時を表示
 - いくらで買ったか: 金額をカード上部に表示
@@ -65,7 +66,7 @@ window.YUUKICHIYA_LINE_CONFIG = {
   pointsPageUrl: "https://example.com/?screen=points",
   measurementRecordsPageUrl: "https://example.com/?screen=measurement-records",
   staffPageUrl: "https://example.com/staff.html",
-  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split",
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```

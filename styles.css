@@ -1330,11 +1330,34 @@ textarea:focus {
 
 .reservation-status-item {
   display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
   gap: 12px;
+  align-items: start;
   padding: 12px;
   border-radius: 18px;
   background: #ffffff;
   box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+.reservation-status-avatar {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  overflow: hidden;
+  color: var(--green-dark);
+  background: var(--green-soft);
+  font-size: 20px;
+  font-weight: 1000;
+  box-shadow: inset 0 0 0 1px rgba(6, 169, 68, 0.14);
+}
+
+.reservation-status-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .reservation-status-main {
@@ -1343,8 +1366,17 @@ textarea:focus {
   gap: 8px;
 }
 
+.reservation-status-head {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
 .reservation-status-main strong {
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--green-dark);
   font-size: 16px;
   line-height: 1.35;
@@ -1371,15 +1403,32 @@ textarea:focus {
 
 .reservation-status-main dl div {
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
+  grid-template-columns: 104px minmax(0, 1fr);
   gap: 8px;
   align-items: start;
 }
 
 .reservation-status-main dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
+}
+
+.reservation-row-icon {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--green-dark);
+  background: #effbf4;
+  font-size: 11px;
+  font-weight: 1000;
+  line-height: 1;
 }
 
 .reservation-status-main dd {
@@ -1740,6 +1789,11 @@ textarea:focus {
   box-shadow: 0 14px 26px rgba(0, 0, 0, 0.14);
 }
 
+.measurement-latest-card {
+  border-color: rgba(11, 141, 227, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
 .measurement-member-filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2038,6 +2092,12 @@ textarea:focus {
   gap: 10px;
 }
 
+.reservation-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .slot-head {
   display: flex;
   align-items: center;
@@ -2047,6 +2107,9 @@ textarea:focus {
 }
 
 .slot-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 18px;
 }
 
@@ -2066,6 +2129,9 @@ textarea:focus {
 .slot-button {
   min-width: 0;
   min-height: 58px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
   border: 0;
   border-radius: 16px;
   padding: 9px 10px;
@@ -2075,12 +2141,40 @@ textarea:focus {
   box-shadow: inset 0 0 0 1px rgba(6, 169, 68, 0.16);
 }
 
+.slot-button strong {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.slot-state-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: white;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(6, 169, 68, 0.14);
+}
+
 .slot-button span {
   display: block;
-  margin-top: 3px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 900;
+}
+
+.slot-button .slot-state-icon {
+  display: inline-grid;
+  margin: 0;
+  color: var(--green-dark);
 }
 
 .slot-button.is-selected {
@@ -2091,6 +2185,11 @@ textarea:focus {
 
 .slot-button.is-selected span {
   color: rgba(255, 255, 255, 0.86);
+}
+
+.slot-button.is-selected .slot-state-icon {
+  color: var(--green-dark);
+  background: white;
 }
 
 .slot-button:disabled {
@@ -2143,11 +2242,6 @@ textarea:focus {
 
 .reservation-result-panel[hidden] {
   display: none;
-}
-
-.latest-measurement-card {
-  border-color: rgba(11, 141, 227, 0.18);
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
 }
 
 .confirmation-mark {

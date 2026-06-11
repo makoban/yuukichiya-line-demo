@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | A | 会員情報 | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=member` |
 | B | ポイント | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=points` |
-| C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements` |
+| C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split` |
 | D | 採寸記録 | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records` |
 | E | ECサイト | リンク | `https://makoban.github.io/yuukichiya-base-preview/?v=20260611-2` |
 | F | クーポン | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=coupon` |

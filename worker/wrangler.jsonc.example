@@ -12,7 +12,7 @@
   ],
   "vars": {
     "ALLOWED_ORIGINS": "https://makoban.github.io",
-    "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements"
+    "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split"
   },
   "observability": {
     "enabled": true
