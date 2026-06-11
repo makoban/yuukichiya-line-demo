@@ -8,6 +8,7 @@
 - `POST /reservations`: 予約を作成する
 - D1の `UNIQUE(date, store, hour)` で同一店舗・同一日・同一時間の二重予約を防ぐ
 - LIFF access tokenからLINEユーザーIDを取得し、公式アカウントから予約確定リッチメッセージをpushする
+- `measurement_records`: 採寸履歴ページ用に、誰が何をいついくらで買ったか、その時の採寸値を保存するテーブル
 
 ## セットアップ
 
@@ -32,3 +33,12 @@ reservationApiUrl: "https://yuukichiya-reservation-api.example.workers.dev/reser
 ```
 
 チャネルアクセストークンは `config.js` やGitHub Pagesには置かず、Workerのsecretだけに保存します。
+
+## 採寸履歴テーブル
+
+`schema.sql` に `measurement_records` を追加しています。店舗側入力や管理画面から以下を保存し、顧客側LIFFではLINEユーザー検証後に本人分だけ返します。
+
+- 会員: `line_user_id`, `member_number`, `member_id`, `member_name`, `member_avatar_url`
+- 購入: `item_name`, `item_kind`, `amount_yen`, `purchased_at`
+- 採寸: `measured_at`, `measurements_json`
+- 店舗入力: `store`, `staff_name`, `note`

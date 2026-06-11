@@ -10,6 +10,8 @@
 - 1時間単位の空き枠選択
 - 予約済み枠の選択不可表示
 - 予約確定後のLINE Flex Messageリッチメッセージ送信処理
+- 採寸履歴ページ `?screen=measurement-records`
+- 採寸履歴の会員アイコン、洋服種別アイコン、購入金額、採寸値カード表示
 - Cloudflare Worker + D1用の予約API雛形
 - 予約APIからMessaging API Push MessageでLINEへ届ける本番経路
 - gpt-image2生成アイコン20種
@@ -23,7 +25,8 @@
 3. `config.js` の `liffId` にLIFF IDを入れる
 4. LINE Official AccountのMessaging APIチャネルアクセストークンを用意する
 5. `worker/` の予約APIをCloudflare Workersへデプロイし、`config.js` の `reservationApiUrl` に設定する
-6. `scripts/apply-rich-menu.mjs` で6分割リッチメニューを反映する
+6. 採寸履歴をLIFF本人識別する場合は、LIFF Endpoint URLをベースURLにするか採寸履歴用LIFF IDを作成する
+7. `scripts/apply-rich-menu.mjs` で6分割リッチメニューを反映する
 
 ## 採寸予約の本番要件
 
@@ -52,6 +55,27 @@
 }
 ```
 
+## 採寸履歴の本番要件
+
+採寸履歴ページは `https://公開したURL/?screen=measurement-records` で開く。リッチメニューの下段左は、このURLへ向ける。
+
+実運用では以下を保存する。
+
+- `line_user_id`: LINEユーザー連携用
+- `member_number`: 会員番号
+- `member_id` / `member_name`: 家族内の誰の記録か
+- `member_avatar_url`: 会員アイコン
+- `item_name`: 購入品名
+- `item_kind`: 制服、体操服、ズボン、上着など
+- `amount_yen`: 購入金額
+- `purchased_at`: 購入日時
+- `measured_at`: 採寸日時
+- `measurements_json`: `身長`, `胸囲`, `ウエスト`, `股下`, `袖丈`, `肩幅`, `着丈` などの採寸値
+- `staff_name` / `store`: 入力店舗・担当者
+- `note`: 補正や提案メモ
+
+顧客側LIFFでは、LIFF access tokenをサーバー側で検証して、本人の `line_user_id` に紐づく履歴だけを返す。店舗側の採寸入力は管理画面またはスタッフ用画面から登録する。
+
 ## 公開URLの候補
 
 GitHub Pagesを使う場合:
@@ -65,6 +89,7 @@ GitHub Pagesを使う場合:
 - LIFF ID
 - Channel access token
 - 予約API URL
+- 採寸履歴を本人識別するためのLIFF Endpoint URLまたは採寸履歴用LIFF ID
 - 採寸予約を外部サイトにする場合の実URL
 
 ECは現時点では以下を設定済み:
@@ -81,6 +106,7 @@ node scripts/apply-rich-menu.mjs
 ```
 
 採寸予約は未指定なら `https://公開したURL/?screen=reservation` を開く。
+採寸履歴はテンプレート上で `https://公開したURL/?screen=measurement-records` を開く。
 チャネルアクセストークンはファイルに保存しない。
 
 ## 予約APIデプロイ

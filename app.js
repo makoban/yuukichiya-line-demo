@@ -95,8 +95,10 @@ const initialMeasurementRecords = [
     id: "mr-1",
     memberId: "m2",
     measuredAt: "2026-06-08T16:20:00+09:00",
+    purchasedAt: "2026-06-08T14:20:00+09:00",
     staff: "本店 佐藤",
     item: "夏制服 上下",
+    amount: 45000,
     values: [
       ["身長", "155cm"],
       ["胸囲", "78cm"],
@@ -109,8 +111,10 @@ const initialMeasurementRecords = [
     id: "mr-2",
     memberId: "m3",
     measuredAt: "2026-06-07T11:05:00+09:00",
+    purchasedAt: "2026-06-07T11:05:00+09:00",
     staff: "高橋店 鈴木",
     item: "体操服・ハーフパンツ",
+    amount: 8800,
     values: [
       ["身長", "142cm"],
       ["胸囲", "70cm"],
@@ -123,8 +127,10 @@ const initialMeasurementRecords = [
     id: "mr-3",
     memberId: "m1",
     measuredAt: "2026-06-05T14:35:00+09:00",
+    purchasedAt: "2026-05-28T16:05:00+09:00",
     staff: "本店 伊藤",
     item: "ジャケット袖丈直し",
+    amount: 2200,
     values: [
       ["袖丈", "54cm"],
       ["肩幅", "39cm"],
@@ -136,8 +142,10 @@ const initialMeasurementRecords = [
     id: "mr-4",
     memberId: "m2",
     measuredAt: "2025-12-18T15:10:00+09:00",
+    purchasedAt: "2025-12-18T15:10:00+09:00",
     staff: "本店 佐藤",
     item: "冬制服 上下",
+    amount: 46200,
     values: [
       ["身長", "148cm"],
       ["胸囲", "74cm"],
@@ -150,8 +158,10 @@ const initialMeasurementRecords = [
     id: "mr-5",
     memberId: "m3",
     measuredAt: "2025-11-02T10:40:00+09:00",
+    purchasedAt: "2025-11-02T10:40:00+09:00",
     staff: "高橋店 鈴木",
     item: "通学ズボン",
+    amount: 7800,
     values: [
       ["身長", "136cm"],
       ["ウエスト", "56cm"],
@@ -204,6 +214,11 @@ const refreshReservationsButton = document.getElementById("refreshReservationsBu
 const reservationStatusList = document.getElementById("reservationStatusList");
 const measurementLatestList = document.getElementById("measurementLatestList");
 const measurementHistoryList = document.getElementById("measurementHistoryList");
+const measurementRecordsScreen = document.getElementById("measurementRecordsScreen");
+const measurementRecordsCloseButton = document.getElementById("measurementRecordsCloseButton");
+const measurementRecordsCountText = document.getElementById("measurementRecordsCountText");
+const measurementMemberFilters = document.getElementById("measurementMemberFilters");
+const measurementRecordsPageList = document.getElementById("measurementRecordsPageList");
 const reservationMemberInput = document.getElementById("reservationMemberInput");
 const reservationStoreInput = document.getElementById("reservationStoreInput");
 const reservationDateInput = document.getElementById("reservationDateInput");
@@ -241,6 +256,7 @@ let myReservationCache = [];
 let myReservationsLoading = false;
 let myReservationsMessage = "";
 let cancellingReservationId = "";
+let selectedMeasurementFilterId = "all";
 let isPageScrollLocked = false;
 let lockedPageScrollY = 0;
 let previousBodyScrollStyles = null;
@@ -698,6 +714,7 @@ function flashPointUpdate(delta) {
 
 function openPointsScreen() {
   if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   syncPointState(readPointState(), { silent: true });
@@ -709,6 +726,24 @@ function openPointsScreen() {
 function closePointsScreen() {
   pointsScreen.hidden = true;
   document.body.classList.remove("points-open");
+  if (lineTalkScreen) lineTalkScreen.hidden = false;
+}
+
+function openMeasurementRecordsScreen() {
+  if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
+  if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (memberServiceScreen) memberServiceScreen.hidden = true;
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
+  selectedMeasurementFilterId = selectedMeasurementFilterId || "all";
+  measurementRecordsScreen.hidden = false;
+  document.body.classList.add("measurement-records-open");
+  renderMeasurementRecordsPage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeMeasurementRecordsScreen() {
+  measurementRecordsScreen.hidden = true;
+  document.body.classList.remove("measurement-records-open");
   if (lineTalkScreen) lineTalkScreen.hidden = false;
 }
 
@@ -801,6 +836,136 @@ function measurementValuesText(record, limit = 3) {
   const values = record.values.slice(0, limit).map(([label, value]) => `${label} ${value}`);
   const rest = record.values.length > limit ? ` ほか${record.values.length - limit}件` : "";
   return `${values.join(" / ")}${rest}`;
+}
+
+function measurementPurchaseDate(record) {
+  return record.purchasedAt || record.measuredAt;
+}
+
+function splitMeasurementValue(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^([0-9]+(?:\.[0-9]+)?)(.*)$/);
+  if (!match) return { number: text || "-", unit: "" };
+  return { number: match[1], unit: match[2].trim() };
+}
+
+function renderMeasurementSizeGrid(record, limit = 6) {
+  if (!record?.values?.length) {
+    return '<div class="measurement-size-empty">採寸値未登録</div>';
+  }
+
+  return `
+    <div class="measurement-size-grid">
+      ${record.values
+        .slice(0, limit)
+        .map(([label, value]) => {
+          const parts = splitMeasurementValue(value);
+          return `
+            <div class="measurement-size-card">
+              <span>${escapeHtml(label)}</span>
+              <strong>${escapeHtml(parts.number)}${parts.unit ? `<small>${escapeHtml(parts.unit)}</small>` : ""}</strong>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function renderMeasurementPurchaseCard(record) {
+  const itemKind = measurementItemKind(record.item);
+  const memberName = measurementMemberName(record.memberId);
+  const memberAvatar = measurementMemberAvatar(record.memberId);
+  return `
+    <article class="measurement-purchase-card">
+      <div class="measurement-purchase-top">
+        <span class="measurement-history-person">
+          <img src="${escapeHtml(memberAvatar)}" alt="${escapeHtml(memberName)}のアイコン" />
+          <span>${escapeHtml(memberName)}</span>
+        </span>
+        <strong class="measurement-purchase-amount">${escapeHtml(formatCurrency(record.amount))}</strong>
+      </div>
+
+      <div class="measurement-purchase-title">
+        <span class="measurement-history-clothing" aria-label="${escapeHtml(itemKind.label)}">
+          ${escapeHtml(itemKind.icon)}
+        </span>
+        <div>
+          <p>購入品</p>
+          <h3>${escapeHtml(record.item)}</h3>
+          <span class="measurement-item-chip">
+            <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
+            ${escapeHtml(itemKind.label)}
+          </span>
+        </div>
+      </div>
+
+      <dl class="measurement-purchase-facts">
+        <div>
+          <dt>いつ</dt>
+          <dd>${escapeHtml(formatPurchaseDate(measurementPurchaseDate(record)))}</dd>
+        </div>
+        <div>
+          <dt>担当</dt>
+          <dd>${escapeHtml(record.staff)}</dd>
+        </div>
+      </dl>
+
+      ${renderMeasurementSizeGrid(record)}
+      ${record.note ? `<p class="measurement-purchase-note">${escapeHtml(record.note)}</p>` : ""}
+    </article>
+  `;
+}
+
+function renderMeasurementRecordsPage() {
+  if (!measurementRecordsPageList) return;
+
+  const allRecords = sortMeasurementRecords(measurementRecords);
+  const visibleRecords =
+    selectedMeasurementFilterId === "all"
+      ? allRecords
+      : allRecords.filter((record) => record.memberId === selectedMeasurementFilterId);
+
+  if (measurementRecordsCountText) {
+    measurementRecordsCountText.textContent = `${visibleRecords.length}件`;
+  }
+
+  if (measurementMemberFilters) {
+    const allActive = selectedMeasurementFilterId === "all" ? " is-active" : "";
+    measurementMemberFilters.innerHTML = [
+      `
+        <button class="measurement-member-filter${allActive}" type="button" data-measurement-filter-id="all">
+          <span class="measurement-filter-all-icon" aria-hidden="true">全</span>
+          <span>
+            <strong>全員</strong>
+            <small>${allRecords.length}件</small>
+          </span>
+        </button>
+      `,
+      ...members.map((member) => {
+        const count = allRecords.filter((record) => record.memberId === member.id).length;
+        const active = selectedMeasurementFilterId === member.id ? " is-active" : "";
+        return `
+          <button class="measurement-member-filter${active}" type="button" data-measurement-filter-id="${escapeHtml(member.id)}">
+            <img src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
+            <span>
+              <strong>${escapeHtml(member.name)}</strong>
+              <small>${count}件</small>
+            </span>
+          </button>
+        `;
+      }),
+    ].join("");
+  }
+
+  measurementRecordsPageList.innerHTML = visibleRecords.length
+    ? visibleRecords.map(renderMeasurementPurchaseCard).join("")
+    : `
+      <div class="reservation-status-empty">
+        <strong>採寸履歴がありません</strong>
+        <span>店舗側で購入時の採寸記録を登録すると、ここに表示されます</span>
+      </div>
+    `;
 }
 
 function renderMeasurementRecords() {
@@ -1328,6 +1493,7 @@ function renderReservationSlots() {
 
 function openReservationScreen() {
   if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
+  if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   renderReservationMemberOptions();
@@ -1870,6 +2036,7 @@ function closeAvatarSheet() {
 function openMemberService() {
   if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
   if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   memberServiceScreen.hidden = false;
   render();
@@ -1888,6 +2055,7 @@ function render() {
   renderAvatars();
   renderReservationMemberOptions();
   renderMeasurementRecords();
+  renderMeasurementRecordsPage();
   if (pointsScreen && !pointsScreen.hidden) {
     renderPoints();
   }
@@ -1904,6 +2072,14 @@ pointsMenuButton?.addEventListener("click", openPointsScreen);
 pointsCloseButton?.addEventListener("click", returnToLine);
 reservationMenuButton?.addEventListener("click", openReservationScreen);
 reservationCloseButton?.addEventListener("click", returnToLine);
+measurementRecordsCloseButton?.addEventListener("click", returnToLine);
+measurementMemberFilters?.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest("[data-measurement-filter-id]");
+  if (!button) return;
+  selectedMeasurementFilterId = button.dataset.measurementFilterId || "all";
+  renderMeasurementRecordsPage();
+});
 refreshReservationsButton?.addEventListener("click", refreshMyReservations);
 reservationStatusList?.addEventListener("click", (event) => {
   const target = event.target instanceof Element ? event.target : null;
@@ -1939,6 +2115,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (!avatarSheet.hidden) {
     closeAvatarSheet();
+  } else if (measurementRecordsScreen && !measurementRecordsScreen.hidden) {
+    closeMeasurementRecordsScreen();
   } else if (!reservationScreen.hidden) {
     closeReservationScreen();
   } else if (!pointsScreen.hidden) {
@@ -2019,10 +2197,15 @@ function openInitialScreenFromUrl() {
     openReservationScreen();
     return;
   }
+  if (screen === "measurement-records" || screen === "measurements") {
+    openMeasurementRecordsScreen();
+    return;
+  }
 
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   if (pointsScreen) pointsScreen.hidden = true;
   if (reservationScreen) reservationScreen.hidden = true;
+  if (measurementRecordsScreen) measurementRecordsScreen.hidden = true;
   memberServiceScreen.hidden = false;
 }
 

@@ -6,9 +6,9 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-latest-measurements" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-measurement-records" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="./config.js?v=20260611-latest-measurements"></script>
+    <script src="./config.js?v=20260611-measurement-records"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
@@ -241,6 +241,47 @@
         </div>
       </section>
 
+      <section class="measurement-records-screen" id="measurementRecordsScreen" aria-label="採寸履歴" hidden>
+        <div class="measurement-records-phone">
+          <header class="points-topbar">
+            <button class="points-back" id="measurementRecordsCloseButton" type="button" aria-label="LINEに戻る">
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div>
+              <p>勇吉屋 採寸履歴</p>
+              <h2>購入時の採寸記録</h2>
+            </div>
+          </header>
+
+          <section class="measurement-record-card measurement-records-hero" aria-label="採寸履歴概要">
+            <div>
+              <span class="record-sync-badge">LINE会員ページ</span>
+              <h3>家族ごとの購入・採寸履歴</h3>
+              <p>誰が、何を、いつ、いくらで購入したかと、その時の採寸値を確認できます。</p>
+            </div>
+            <strong id="measurementRecordsCountText">0件</strong>
+          </section>
+
+          <section class="measurement-record-card" aria-label="会員絞り込み">
+            <div class="section-title-row">
+              <div>
+                <h3>会員で見る</h3>
+                <p class="section-caption">会員アイコンから履歴を絞り込み</p>
+              </div>
+            </div>
+            <div class="measurement-member-filters" id="measurementMemberFilters"></div>
+          </section>
+
+          <section class="measurement-record-card measurement-history-card" aria-label="購入採寸履歴">
+            <div class="measurement-history-head">
+              <h3><span class="section-title-icon" aria-hidden="true">↻</span>履歴欄</h3>
+              <span>新しい順</span>
+            </div>
+            <div class="measurement-records-page-list" id="measurementRecordsPageList"></div>
+          </section>
+        </div>
+      </section>
+
       <section class="avatar-sheet" id="avatarSheet" aria-label="アイコン変更" hidden>
         <div class="avatar-sheet-panel">
           <div class="section-title-row">
@@ -258,6 +299,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-latest-measurements"></script>
+    <script src="./app.js?v=20260611-measurement-records"></script>
   </body>
 </html>
