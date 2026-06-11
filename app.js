@@ -219,6 +219,8 @@ const measurementRecordsCloseButton = document.getElementById("measurementRecord
 const measurementRecordsCountText = document.getElementById("measurementRecordsCountText");
 const measurementMemberFilters = document.getElementById("measurementMemberFilters");
 const measurementRecordsPageList = document.getElementById("measurementRecordsPageList");
+const couponScreen = document.getElementById("couponScreen");
+const couponCloseButton = document.getElementById("couponCloseButton");
 const reservationMemberInput = document.getElementById("reservationMemberInput");
 const reservationStoreInput = document.getElementById("reservationStoreInput");
 const reservationDateInput = document.getElementById("reservationDateInput");
@@ -715,6 +717,7 @@ function flashPointUpdate(delta) {
 function openPointsScreen() {
   if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
   if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
+  hideCouponScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   syncPointState(readPointState(), { silent: true });
@@ -732,6 +735,7 @@ function closePointsScreen() {
 function openMeasurementRecordsScreen() {
   if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
   if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  hideCouponScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   selectedMeasurementFilterId = selectedMeasurementFilterId || "all";
@@ -744,6 +748,28 @@ function openMeasurementRecordsScreen() {
 function closeMeasurementRecordsScreen() {
   measurementRecordsScreen.hidden = true;
   document.body.classList.remove("measurement-records-open");
+  if (lineTalkScreen) lineTalkScreen.hidden = false;
+}
+
+function hideCouponScreen() {
+  if (!couponScreen) return;
+  couponScreen.hidden = true;
+  document.body.classList.remove("coupon-open");
+}
+
+function openCouponScreen() {
+  if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
+  if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
+  if (memberServiceScreen) memberServiceScreen.hidden = true;
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
+  couponScreen.hidden = false;
+  document.body.classList.add("coupon-open");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeCouponScreen() {
+  hideCouponScreen();
   if (lineTalkScreen) lineTalkScreen.hidden = false;
 }
 
@@ -1494,6 +1520,7 @@ function renderReservationSlots() {
 function openReservationScreen() {
   if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
   if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
+  hideCouponScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   renderReservationMemberOptions();
@@ -2037,6 +2064,7 @@ function openMemberService() {
   if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
   if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
   if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
+  hideCouponScreen();
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   memberServiceScreen.hidden = false;
   render();
@@ -2073,6 +2101,7 @@ pointsCloseButton?.addEventListener("click", returnToLine);
 reservationMenuButton?.addEventListener("click", openReservationScreen);
 reservationCloseButton?.addEventListener("click", returnToLine);
 measurementRecordsCloseButton?.addEventListener("click", returnToLine);
+couponCloseButton?.addEventListener("click", returnToLine);
 measurementMemberFilters?.addEventListener("click", (event) => {
   const target = event.target instanceof Element ? event.target : null;
   const button = target?.closest("[data-measurement-filter-id]");
@@ -2115,6 +2144,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (!avatarSheet.hidden) {
     closeAvatarSheet();
+  } else if (couponScreen && !couponScreen.hidden) {
+    closeCouponScreen();
   } else if (measurementRecordsScreen && !measurementRecordsScreen.hidden) {
     closeMeasurementRecordsScreen();
   } else if (!reservationScreen.hidden) {
@@ -2201,11 +2232,16 @@ function openInitialScreenFromUrl() {
     openMeasurementRecordsScreen();
     return;
   }
+  if (screen === "coupon") {
+    openCouponScreen();
+    return;
+  }
 
   if (lineTalkScreen) lineTalkScreen.hidden = true;
   if (pointsScreen) pointsScreen.hidden = true;
   if (reservationScreen) reservationScreen.hidden = true;
   if (measurementRecordsScreen) measurementRecordsScreen.hidden = true;
+  hideCouponScreen();
   memberServiceScreen.hidden = false;
 }
 

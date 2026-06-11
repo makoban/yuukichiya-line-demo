@@ -16,7 +16,8 @@
 - 予約APIからMessaging API Push MessageでLINEへ届ける本番経路
 - gpt-image2生成アイコン20種
 - LINEリッチメニュー画像
-- Messaging API用リッチメニュー投入スクリプト
+- Official Account Manager用リッチメニューURL表
+- Messaging APIのリッチメニュー横取り解除スクリプト
 
 ## 本番接続に必要なもの
 
@@ -26,7 +27,7 @@
 4. LINE Official AccountのMessaging APIチャネルアクセストークンを用意する
 5. `worker/` の予約APIをCloudflare Workersへデプロイし、`config.js` の `reservationApiUrl` に設定する
 6. 採寸履歴をLIFF本人識別する場合は、LIFF Endpoint URLをベースURLにするか採寸履歴用LIFF IDを作成する
-7. `scripts/apply-rich-menu.mjs` で6分割リッチメニューを反映する
+7. LINE Official Account Managerで6分割リッチメニューの各URLを設定する
 
 ## 採寸予約の本番要件
 
@@ -92,21 +93,24 @@ GitHub Pagesを使う場合:
 - 採寸履歴を本人識別するためのLIFF Endpoint URLまたは採寸履歴用LIFF ID
 - 採寸予約を外部サイトにする場合の実URL
 
-ECは現時点では以下を設定済み:
+ECボタンはBASEデザイン確認用プレビューへ向ける:
 
-- `https://yuukichiya.base.shop/`
+- `https://makoban.github.io/yuukichiya-base-preview/?v=20260611-2`
 
-## リッチメニュー反映コマンド
+## リッチメニュー設定方針
+
+リッチメニューはLINE Official Account Managerを正とする。`scripts/apply-rich-menu.mjs` は通常実行禁止。Messaging APIでデフォルトリッチメニューを設定すると、Official Account Manager側の編集が効かないように見えるため。
+
+Official Account Managerに入れるURLは `OFFICIAL_ACCOUNT_MANAGER_RICH_MENU.md` を参照する。
+
+過去にMessaging API側のデフォルトリッチメニューが設定されている可能性がある場合は、一度だけ以下で解除する。
 
 ```bash
 cd line-demo
 LINE_CHANNEL_ACCESS_TOKEN='ここにチャネルアクセストークン' \
-YUUKICHIYA_BASE_URL='https://公開したURL/' \
-node scripts/apply-rich-menu.mjs
+node scripts/release-rich-menu-to-official-manager.mjs
 ```
 
-採寸予約は未指定なら `https://公開したURL/?screen=reservation` を開く。
-採寸履歴はテンプレート上で `https://公開したURL/?screen=measurement-records` を開く。
 チャネルアクセストークンはファイルに保存しない。
 
 ## 予約APIデプロイ

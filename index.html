@@ -6,9 +6,9 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-measurement-records" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-official-manager" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="./config.js?v=20260611-measurement-records"></script>
+    <script src="./config.js?v=20260611-official-manager"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
@@ -282,6 +282,34 @@
         </div>
       </section>
 
+      <section class="coupon-screen" id="couponScreen" aria-label="クーポン" hidden>
+        <div class="coupon-phone">
+          <header class="points-topbar">
+            <button class="points-back" id="couponCloseButton" type="button" aria-label="LINEに戻る">
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div>
+              <p>勇吉屋 クーポン</p>
+              <h2>ご利用可能なクーポン</h2>
+            </div>
+          </header>
+
+          <section class="coupon-card" aria-label="クーポン">
+            <div class="coupon-card-top">
+              <span>店頭提示</span>
+              <strong>制服・体操服の採寸相談</strong>
+            </div>
+            <p>LINE会員画面を店頭でご提示ください。対象商品や期間は店舗で確認します。</p>
+            <button class="coupon-present-button" type="button">この画面を提示する</button>
+          </section>
+
+          <section class="coupon-note-card" aria-label="クーポン利用条件">
+            <h3>ご利用について</h3>
+            <p>実運用では、会員情報・学校・購入履歴に合わせてクーポンを出し分けます。この画面はリッチメニュー動作確認用です。</p>
+          </section>
+        </div>
+      </section>
+
       <section class="avatar-sheet" id="avatarSheet" aria-label="アイコン変更" hidden>
         <div class="avatar-sheet-panel">
           <div class="section-title-row">
@@ -299,6 +327,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-measurement-records"></script>
+    <script src="./app.js?v=20260611-official-manager"></script>
   </body>
 </html>

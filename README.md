@@ -14,10 +14,11 @@
 - `assets/avatars/`: gpt-image2生成の選択アイコン20種
 - `config.js`: LIFF IDや外部リンクの設定
 - `rich-menu/`: LINE公式リッチメニュー画像と設定テンプレート
-- `scripts/`: Messaging APIでリッチメニューを投入するスクリプト
+- `OFFICIAL_ACCOUNT_MANAGER_RICH_MENU.md`: Official Account Managerで入れる6枠のURL
+- `scripts/`: 予約通知などの検証用。リッチメニュー投入スクリプトは通常実行禁止
 - `worker/`: 採寸予約APIとLINE Push通知用のCloudflare Worker
 
-本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE公式リッチメニューから `?screen=member` / `?screen=points` / `?screen=measurement-records` / 採寸予約LIFF URLを直接開く構成にします。
+本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE Official Account Managerのリッチメニューから `?screen=member` / `?screen=points` / `?screen=measurement-records` / 採寸予約LIFF URLを直接開く構成にします。リッチメニューの編集元はOfficial Account Managerに統一します。
 
 ## ポイントQRデモ
 
@@ -89,16 +90,17 @@ GitHub Pagesや `config.js` にLINEチャネルアクセストークンは置き
 - `GET /reservations?mine=1`: `Authorization: Bearer <LIFF access token>` で本人の予約一覧を返す
 - `DELETE /reservations/:id`: 同じLINEユーザーの予約だけキャンセルする
 
-## リッチメニュー投入
+## リッチメニュー設定
 
-チャネルアクセストークンはファイルに保存せず、環境変数で渡します。
+通常運用ではLINE Official Account Managerで設定します。入力値は `OFFICIAL_ACCOUNT_MANAGER_RICH_MENU.md` を参照してください。
+
+Messaging APIでリッチメニューを作成・デフォルト設定すると、Official Account Managerで設定したメニューより優先される場合があります。そのため `scripts/apply-rich-menu.mjs` は通常実行できないようにガードしています。
+
+過去にMessaging API側のデフォルトリッチメニューを設定した可能性がある場合は、チャネルアクセストークンを環境変数で渡し、以下を一度だけ実行してOfficial Account Managerへ制御を戻します。
 
 ```bash
 LINE_CHANNEL_ACCESS_TOKEN='...' \
-YUUKICHIYA_BASE_URL='https://example.com/' \
-node scripts/apply-rich-menu.mjs
+node scripts/release-rich-menu-to-official-manager.mjs
 ```
 
-`YUUKICHIYA_BASE_URL` はこのデモページを公開したHTTPS URLです。
-採寸予約URLは未指定なら `https://example.com/?screen=reservation` になります。LINE内で予約確定メッセージを送る場合は `YUUKICHIYA_MEASUREMENT_RESERVATION_URL='https://liff.line.me/2010371637-PcIXzbgC?v=20260611-latest-measurements'` を指定します。
-採寸履歴はリッチメニューテンプレート上で `https://example.com/?screen=measurement-records` を開きます。
+チャネルアクセストークンはファイルに保存しません。

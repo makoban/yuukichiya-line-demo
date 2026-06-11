@@ -29,7 +29,8 @@ body {
 body.sheet-open,
 body.points-open,
 body.reservation-open,
-body.measurement-records-open {
+body.measurement-records-open,
+body.coupon-open {
   overflow: hidden;
 }
 
@@ -610,7 +611,8 @@ textarea:focus {
 
 .points-screen,
 .reservation-screen,
-.measurement-records-screen {
+.measurement-records-screen,
+.coupon-screen {
   position: fixed;
   inset: 0;
   z-index: 15;
@@ -624,6 +626,7 @@ textarea:focus {
 .points-screen[hidden],
 .reservation-screen[hidden],
 .measurement-records-screen[hidden],
+.coupon-screen[hidden],
 .staff-sheet[hidden],
 .point-effect[hidden] {
   display: none;
@@ -631,7 +634,8 @@ textarea:focus {
 
 .points-phone,
 .reservation-phone,
-.measurement-records-phone {
+.measurement-records-phone,
+.coupon-phone {
   width: min(100%, 430px);
   min-height: calc(100vh - 36px);
   margin: 0 auto;
@@ -1572,6 +1576,73 @@ textarea:focus {
 .measurement-records-page-list {
   display: grid;
   gap: 10px;
+}
+
+.coupon-card,
+.coupon-note-card {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 30px rgba(12, 34, 58, 0.1);
+}
+
+.coupon-card {
+  overflow: hidden;
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(255, 222, 111, 0.38) 0 24%, transparent 24% 100%),
+    linear-gradient(135deg, #057f39 0%, #08aa48 46%, #0b8de3 100%);
+}
+
+.coupon-card-top {
+  display: grid;
+  gap: 8px;
+}
+
+.coupon-card-top span {
+  justify-self: start;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #075985;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.coupon-card-top strong {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.coupon-card p,
+.coupon-note-card p {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+.coupon-present-button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 16px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--green-dark);
+  background: white;
+  font-size: 15px;
+  font-weight: 1000;
+  box-shadow: 0 12px 24px rgba(6, 41, 28, 0.16);
+}
+
+.coupon-note-card {
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
+.coupon-note-card h3 {
+  font-size: 18px;
 }
 
 .measurement-purchase-card {
