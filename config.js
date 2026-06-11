@@ -6,6 +6,8 @@ window.YUUKICHIYA_LINE_CONFIG = {
   measurementReservationUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=reservation",
   reservationApiUrl: "",
   reservationStores: ["本店", "高橋店"],
+  reservationStartHour: 10,
+  reservationEndHour: 18,
   measurementRecordsPageUrl: "",
   ecUrl: "https://yuukichiya.base.shop/",
   couponPageUrl: "",
