@@ -1,10 +1,10 @@
 window.YUUKICHIYA_LINE_CONFIG = {
-  liffId: "",
+  liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
   memberPageUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=member",
   pointsPageUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=points",
   staffPageUrl: "https://makoban.github.io/yuukichiya-line-demo/staff.html",
-  measurementReservationUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=reservation",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC",
   reservationApiUrl: "",
   reservationStores: ["本店", "高橋店"],
   reservationStartHour: 10,

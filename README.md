@@ -3,6 +3,7 @@
 これは勇吉屋公式LINEのリッチメニュー起点で、会員照会・ポイント・採寸予約を開くLIFF風デモです。
 
 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
+採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC`
 
 - `index.html`: LINEトーク画面 + リッチメニュー + 顧客側LIFF風画面
 - `staff.html`: 店舗側ポイント処理画面
@@ -14,7 +15,7 @@
 - `rich-menu/`: LINE公式リッチメニュー画像と設定テンプレート
 - `scripts/`: Messaging APIでリッチメニューを投入するスクリプト
 
-本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE公式リッチメニューから `?screen=member` / `?screen=points` / `?screen=reservation` へ直接開く構成にします。
+本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE公式リッチメニューから `?screen=member` / `?screen=points` / 採寸予約LIFF URLを直接開く構成にします。
 
 ## ポイントQRデモ
 
@@ -23,7 +24,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸予約デモ
 
-最初のLINE風画面のリッチメニュー、または `?screen=reservation` で採寸予約画面を開けます。
+最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC` で採寸予約画面を開けます。
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
@@ -34,15 +35,16 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## LINE接続
 
-`config.js` の `liffId` にLINE Developersで発行したLIFF IDを入れると、LINE内で開いた時にLIFF初期化を行います。
+`config.js` の `liffId` にLINE Developersで発行したLIFF IDを入れると、LINE内で開いた時にLIFF初期化を行います。勇吉屋公式の採寸予約は `2010371637-PcIXzbgC` を設定済みです。
 
 ```js
 window.YUUKICHIYA_LINE_CONFIG = {
-  liffId: "xxxxxxxxxx-xxxxxxxx",
+  liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
   memberPageUrl: "https://example.com/?screen=member",
   pointsPageUrl: "https://example.com/?screen=points",
   staffPageUrl: "https://example.com/staff.html",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC",
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```
@@ -58,4 +60,4 @@ node scripts/apply-rich-menu.mjs
 ```
 
 `YUUKICHIYA_BASE_URL` はこのデモページを公開したHTTPS URLです。
-採寸予約URLは未指定なら `https://example.com/?screen=reservation` になります。外部予約サイトを使う場合だけ `YUUKICHIYA_MEASUREMENT_RESERVATION_URL` を指定します。
+採寸予約URLは未指定なら `https://example.com/?screen=reservation` になります。LINE内で予約確定メッセージを送る場合は `YUUKICHIYA_MEASUREMENT_RESERVATION_URL='https://liff.line.me/2010371637-PcIXzbgC'` を指定します。
