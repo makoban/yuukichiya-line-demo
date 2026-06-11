@@ -6,63 +6,21 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-rich-staff" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-line-return-avatar" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
   </head>
   <body>
     <main class="phone-shell" aria-label="勇吉屋公式LINE">
-      <header class="line-header">
-        <a class="back-link" id="lineBackButton" href="https://lin.ee/7byeeeA" aria-label="LINEに戻る">
-          <span aria-hidden="true">‹</span>
-        </a>
+      <header class="member-page-header">
         <div>
           <p class="header-kicker" id="liffStatus">勇吉屋 公式LINE</p>
-          <h1>勇吉屋</h1>
+          <h1>会員照会</h1>
         </div>
+        <button class="line-return-button" id="lineReturnButton" type="button">LINEに戻る</button>
       </header>
 
-      <section class="line-talk-screen" id="lineTalkScreen" aria-label="LINEリッチメニュー起点">
-        <div class="talk-date">今日</div>
-        <div class="talk-message">
-          <strong>勇吉屋 会員サービス</strong>
-          <span>下のリッチメニューから、会員照会・ポイント・採寸予約を開けます。</span>
-        </div>
-        <div class="talk-message is-note">
-          <span>店頭では「ポイント」を押して会員識別QRを提示してください。</span>
-        </div>
-
-        <nav class="line-rich-menu" aria-label="LINEリッチメニュー">
-          <button class="rich-menu-tile" id="memberMenuButton" type="button">
-            <span class="tile-icon">ID</span>
-            <strong>会員照会</strong>
-          </button>
-          <button class="rich-menu-tile is-point" id="pointsMenuButton" type="button">
-            <span class="tile-icon">P</span>
-            <strong>ポイント</strong>
-          </button>
-          <button class="rich-menu-tile" id="reservationMenuButton" type="button">
-            <span class="tile-icon">採</span>
-            <strong>採寸予約</strong>
-          </button>
-          <a class="rich-menu-tile" href="https://yuukichiya.base.shop/" target="_blank" rel="noreferrer">
-            <span class="tile-icon">EC</span>
-            <strong>ECサイト</strong>
-          </a>
-        </nav>
-      </section>
-
-      <section class="member-service-screen" id="memberServiceScreen" aria-label="会員照会" hidden>
-        <header class="service-topbar">
-          <button class="points-back" id="memberCloseButton" type="button" aria-label="LINEに戻る">
-            <span aria-hidden="true">‹</span>
-          </button>
-          <div>
-            <p>リッチメニューから起動</p>
-            <h2>会員照会</h2>
-          </div>
-        </header>
-
+      <section class="member-service-screen" id="memberServiceScreen" aria-label="会員照会">
         <section class="representative-card" aria-label="代表者枠">
           <div class="representative-head">
             <span class="representative-badge">代表者</span>
@@ -163,7 +121,7 @@
               <canvas id="pointsQrCanvas" width="244" height="244"></canvas>
               <span class="scan-beam" aria-hidden="true"></span>
             </div>
-            <a class="scan-demo-button" id="staffScanButton" href="./staff.html?token=demo-yuk001234" target="_blank" rel="noreferrer">店舗側画面を開く</a>
+            <button class="scan-demo-button" id="staffScanButton" type="button" hidden>店舗側画面を開く</button>
           </section>
 
           <section class="point-history-card" aria-label="ポイント履歴">
@@ -181,19 +139,40 @@
         </div>
       </section>
 
-      <section class="reservation-screen" id="reservationScreen" aria-label="採寸予約" hidden>
+      <section class="reservation-screen" id="reservationScreen" aria-label="採寸記録" hidden>
         <div class="reservation-phone">
           <header class="points-topbar">
             <button class="points-back" id="reservationCloseButton" type="button" aria-label="LINEに戻る">
               <span aria-hidden="true">‹</span>
             </button>
             <div>
-              <p>勇吉屋 採寸予約</p>
-              <h2>空き時間を選択</h2>
+              <p>勇吉屋 採寸記録</p>
+              <h2>最新記録と履歴</h2>
             </div>
           </header>
 
+          <section class="measurement-record-card" aria-label="採寸記録">
+            <div class="section-title-row">
+              <div>
+                <h3>最新の登録メンバー</h3>
+                <p class="section-caption">いつ・誰が・何を採寸したかを一覧で確認</p>
+              </div>
+              <span class="record-sync-badge">店頭入力</span>
+            </div>
+            <div class="measurement-latest-list" id="measurementLatestList"></div>
+
+            <div class="measurement-history-head">
+              <h3>履歴</h3>
+              <span>新しい順</span>
+            </div>
+            <div class="measurement-history-list" id="measurementHistoryList"></div>
+          </section>
+
           <section class="reservation-card" aria-label="予約内容">
+            <div class="section-title-row">
+              <h3>採寸予約</h3>
+              <span class="reservation-note-chip">空き枠確認</span>
+            </div>
             <div class="reservation-form-grid">
               <label>
                 <span>対象のお子さま</span>
@@ -257,6 +236,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-no-phone"></script>
+    <script src="./app.js?v=20260611-line-return-avatar"></script>
   </body>
 </html>

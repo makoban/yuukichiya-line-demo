@@ -77,6 +77,78 @@ const initialPointTransactions = [
 ];
 let pointTransactions = clonePointTransactions(initialPointTransactions);
 
+const initialMeasurementRecords = [
+  {
+    id: "mr-1",
+    memberId: "m2",
+    measuredAt: "2026-06-08T16:20:00+09:00",
+    staff: "本店 佐藤",
+    item: "夏制服 上下",
+    values: [
+      ["身長", "155cm"],
+      ["胸囲", "78cm"],
+      ["ウエスト", "62cm"],
+      ["股下", "68cm"],
+    ],
+    note: "中学夏服の買い替え相談",
+  },
+  {
+    id: "mr-2",
+    memberId: "m3",
+    measuredAt: "2026-06-07T11:05:00+09:00",
+    staff: "高橋店 鈴木",
+    item: "体操服・ハーフパンツ",
+    values: [
+      ["身長", "142cm"],
+      ["胸囲", "70cm"],
+      ["ウエスト", "58cm"],
+      ["股下", "61cm"],
+    ],
+    note: "成長分を見てワンサイズ上を提案",
+  },
+  {
+    id: "mr-3",
+    memberId: "m1",
+    measuredAt: "2026-06-05T14:35:00+09:00",
+    staff: "本店 伊藤",
+    item: "ジャケット袖丈直し",
+    values: [
+      ["袖丈", "54cm"],
+      ["肩幅", "39cm"],
+      ["着丈", "61cm"],
+    ],
+    note: "保護者用の補正相談",
+  },
+  {
+    id: "mr-4",
+    memberId: "m2",
+    measuredAt: "2025-12-18T15:10:00+09:00",
+    staff: "本店 佐藤",
+    item: "冬制服 上下",
+    values: [
+      ["身長", "148cm"],
+      ["胸囲", "74cm"],
+      ["ウエスト", "59cm"],
+      ["股下", "64cm"],
+    ],
+    note: "冬服の袖丈と裾を確認",
+  },
+  {
+    id: "mr-5",
+    memberId: "m3",
+    measuredAt: "2025-11-02T10:40:00+09:00",
+    staff: "高橋店 鈴木",
+    item: "通学ズボン",
+    values: [
+      ["身長", "136cm"],
+      ["ウエスト", "56cm"],
+      ["股下", "57cm"],
+    ],
+    note: "裾上げあり",
+  },
+];
+let measurementRecords = cloneMeasurementRecords(initialMeasurementRecords);
+
 const memberList = document.getElementById("memberList");
 const avatarGrid = document.getElementById("avatarGrid");
 const avatarSheet = document.getElementById("avatarSheet");
@@ -93,7 +165,7 @@ const schoolInput = document.getElementById("schoolInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
 const liffStatus = document.getElementById("liffStatus");
-const lineBackButton = document.getElementById("lineBackButton");
+const lineReturnButton = document.getElementById("lineReturnButton");
 const lineTalkScreen = document.getElementById("lineTalkScreen");
 const memberServiceScreen = document.getElementById("memberServiceScreen");
 const memberCloseButton = document.getElementById("memberCloseButton");
@@ -113,6 +185,8 @@ const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
 const reservationScreen = document.getElementById("reservationScreen");
 const reservationMenuButton = document.getElementById("reservationMenuButton");
 const reservationCloseButton = document.getElementById("reservationCloseButton");
+const measurementLatestList = document.getElementById("measurementLatestList");
+const measurementHistoryList = document.getElementById("measurementHistoryList");
 const reservationMemberInput = document.getElementById("reservationMemberInput");
 const reservationStoreInput = document.getElementById("reservationStoreInput");
 const reservationDateInput = document.getElementById("reservationDateInput");
@@ -137,6 +211,7 @@ const reservationStores =
 let selectedReservationHour = null;
 let lastReservation = null;
 let lastReservationMessage = "";
+let lastReservationFlexMessage = null;
 let lineProfile = null;
 
 syncPointState(readPointState(), { silent: true });
@@ -152,6 +227,13 @@ function cloneMembers(list) {
 
 function clonePointTransactions(list) {
   return list.map((transaction) => ({ ...transaction }));
+}
+
+function cloneMeasurementRecords(list) {
+  return list.map((record) => ({
+    ...record,
+    values: Array.isArray(record.values) ? record.values.map((pair) => [...pair]) : [],
+  }));
 }
 
 function memberKindLabel(member, index) {
@@ -366,7 +448,9 @@ function formatTransactionDate(value) {
 function renderPoints(options = {}) {
   const rep = members[0];
   pointMemberText.textContent = `${rep.name} 様 / ${memberNumber}`;
-  staffScanButton.href = staffPageUrl();
+  if (staffScanButton) {
+    staffScanButton.dataset.url = staffPageUrl();
+  }
   drawQrToCanvas(pointsQrCanvas, pointQrSeed());
   renderPointHistory();
 
@@ -439,9 +523,9 @@ function flashPointUpdate(delta) {
 }
 
 function openPointsScreen() {
-  if (!reservationScreen.hidden) closeReservationScreen();
-  if (!memberServiceScreen.hidden) closeMemberService();
-  lineTalkScreen.hidden = true;
+  if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (memberServiceScreen) memberServiceScreen.hidden = true;
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
   syncPointState(readPointState(), { silent: true });
   pointsScreen.hidden = false;
   document.body.classList.add("points-open");
@@ -451,7 +535,7 @@ function openPointsScreen() {
 function closePointsScreen() {
   pointsScreen.hidden = true;
   document.body.classList.remove("points-open");
-  lineTalkScreen.hidden = false;
+  if (lineTalkScreen) lineTalkScreen.hidden = false;
 }
 
 function returnToLine(event) {
@@ -481,6 +565,85 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatMeasurementDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "日時未登録";
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function measurementMemberName(memberId) {
+  return members.find((member) => member.id === memberId)?.name || "登録メンバー";
+}
+
+function sortMeasurementRecords(records) {
+  return [...records].sort((a, b) => new Date(b.measuredAt).getTime() - new Date(a.measuredAt).getTime());
+}
+
+function latestMeasurementForMember(memberId) {
+  return sortMeasurementRecords(measurementRecords.filter((record) => record.memberId === memberId))[0];
+}
+
+function measurementValuesText(record, limit = 3) {
+  if (!record?.values?.length) return "採寸値未登録";
+  const values = record.values.slice(0, limit).map(([label, value]) => `${label} ${value}`);
+  const rest = record.values.length > limit ? ` ほか${record.values.length - limit}件` : "";
+  return `${values.join(" / ")}${rest}`;
+}
+
+function renderMeasurementRecords() {
+  if (!measurementLatestList || !measurementHistoryList) return;
+
+  measurementLatestList.innerHTML = members
+    .map((member, index) => {
+      const record = latestMeasurementForMember(member.id);
+      const kind = memberKindLabel(member, index);
+      if (!record) {
+        return `
+          <article class="measurement-latest-item is-empty">
+            <div class="measurement-member-row">
+              <strong>${escapeHtml(member.name)}</strong>
+              <span>${escapeHtml(kind)}</span>
+            </div>
+            <p>まだ採寸記録がありません</p>
+          </article>
+        `;
+      }
+      return `
+        <article class="measurement-latest-item">
+          <div class="measurement-member-row">
+            <strong>${escapeHtml(member.name)}</strong>
+            <span>${escapeHtml(kind)}</span>
+          </div>
+          <dl class="measurement-latest-meta">
+            <div>
+              <dt>いつ</dt>
+              <dd>${escapeHtml(formatMeasurementDate(record.measuredAt))}</dd>
+            </div>
+            <div>
+              <dt>何を</dt>
+              <dd>${escapeHtml(record.item)}</dd>
+            </div>
+          </dl>
+          <p>${escapeHtml(measurementValuesText(record))}</p>
+          <span class="measurement-staff">入力 ${escapeHtml(record.staff)}</span>
+        </article>
+      `;
+    })
+    .join("");
+
+  measurementHistoryList.innerHTML = sortMeasurementRecords(measurementRecords)
+    .map((record) => `
+      <div class="measurement-history-item">
+        <div>
+          <strong>${escapeHtml(record.item)}</strong>
+          <span>${escapeHtml(formatMeasurementDate(record.measuredAt))} / ${escapeHtml(measurementMemberName(record.memberId))} / ${escapeHtml(record.staff)}</span>
+          <small>${escapeHtml(measurementValuesText(record, 4))}</small>
+        </div>
+      </div>
+    `)
+    .join("");
 }
 
 function toDateInputValue(date) {
@@ -637,9 +800,9 @@ function renderReservationSlots() {
 }
 
 function openReservationScreen() {
-  if (!pointsScreen.hidden) closePointsScreen();
-  if (!memberServiceScreen.hidden) closeMemberService();
-  lineTalkScreen.hidden = true;
+  if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
+  if (memberServiceScreen) memberServiceScreen.hidden = true;
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
   renderReservationMemberOptions();
   renderReservationStores();
   reservationDateInput.min = toDateInputValue(new Date());
@@ -651,13 +814,14 @@ function openReservationScreen() {
   setLineSendStatus("LINEメッセージを準備中");
   reservationScreen.hidden = false;
   document.body.classList.add("reservation-open");
+  renderMeasurementRecords();
   renderReservationSlots();
 }
 
 function closeReservationScreen() {
   reservationScreen.hidden = true;
   document.body.classList.remove("reservation-open");
-  lineTalkScreen.hidden = false;
+  if (lineTalkScreen) lineTalkScreen.hidden = false;
 }
 
 function selectedReservationMember() {
@@ -731,6 +895,7 @@ async function confirmReservation() {
       : reserveLocally(candidate);
     lastReservation = reservation;
     lastReservationMessage = buildReservationLineMessage(reservation);
+    lastReservationFlexMessage = buildReservationFlexMessage(reservation);
     selectedReservationHour = null;
     renderReservationSlots();
     showReservationConfirmation(reservation);
@@ -751,15 +916,7 @@ async function confirmReservation() {
 
 function showReservationConfirmation(reservation) {
   reservationConfirmedTime.textContent = `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`;
-  const details = [
-    ["受付番号", reservation.id],
-    ["店舗", reservation.store],
-    ["対象", reservation.childName],
-    ["保護者", reservation.guardianName],
-    ["会員番号", reservation.memberNumber],
-  ];
-  if (reservation.note) details.push(["メモ", reservation.note]);
-  reservationConfirmationDetails.innerHTML = details
+  reservationConfirmationDetails.innerHTML = reservationDisplayRows(reservation)
     .map(([label, value]) => `
       <div>
         <dt>${escapeHtml(label)}</dt>
@@ -771,17 +928,138 @@ function showReservationConfirmation(reservation) {
   reservationConfirmation.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+function reservationDateTimeText(reservation) {
+  return `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`;
+}
+
+function reservationDisplayRows(reservation) {
+  const rows = [
+    ["受付番号", reservation.id],
+    ["店舗", reservation.store],
+    ["対象", reservation.childName],
+    ["保護者", reservation.guardianName],
+    ["会員番号", reservation.memberNumber],
+  ];
+  if (reservation.note) rows.push(["メモ", reservation.note]);
+  return rows.filter(([, value]) => value);
+}
+
 function buildReservationLineMessage(reservation) {
-  const note = reservation.note ? `\nメモ：${reservation.note}` : "";
   return [
     "採寸予約が確定しました。",
-    `日時：${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`,
-    `店舗：${reservation.store}`,
-    `対象：${reservation.childName}`,
-    `保護者：${reservation.guardianName}`,
-    `会員番号：${reservation.memberNumber}`,
-    `受付番号：${reservation.id}${note}`,
+    `日時：${reservationDateTimeText(reservation)}`,
+    ...reservationDisplayRows(reservation).map(([label, value]) => `${label}：${value}`),
   ].join("\n");
+}
+
+function reservationPageUrl() {
+  if (lineConfig.measurementReservationUrl?.startsWith("https://")) {
+    return lineConfig.measurementReservationUrl;
+  }
+  if (window.location.href.startsWith("https://")) {
+    return window.location.href;
+  }
+  return lineConfig.officialLineUrl || "https://lin.ee/7byeeeA";
+}
+
+function flexRow(label, value) {
+  return {
+    type: "box",
+    layout: "baseline",
+    spacing: "sm",
+    contents: [
+      {
+        type: "text",
+        text: label,
+        color: "#667085",
+        size: "sm",
+        flex: 2,
+      },
+      {
+        type: "text",
+        text: String(value),
+        color: "#152033",
+        size: "sm",
+        weight: "bold",
+        wrap: true,
+        flex: 5,
+      },
+    ],
+  };
+}
+
+function buildReservationFlexMessage(reservation) {
+  const dateTime = reservationDateTimeText(reservation);
+  return {
+    type: "flex",
+    altText: `採寸予約が確定しました。${dateTime}`,
+    contents: {
+      type: "bubble",
+      size: "mega",
+      header: {
+        type: "box",
+        layout: "vertical",
+        backgroundColor: "#06a944",
+        paddingAll: "16px",
+        contents: [
+          {
+            type: "text",
+            text: "勇吉屋 採寸予約",
+            color: "#ffffff",
+            size: "sm",
+            weight: "bold",
+          },
+          {
+            type: "text",
+            text: "予約確定しました",
+            color: "#ffffff",
+            size: "xl",
+            weight: "bold",
+            margin: "sm",
+          },
+        ],
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        spacing: "md",
+        paddingAll: "18px",
+        contents: [
+          {
+            type: "text",
+            text: dateTime,
+            color: "#027a34",
+            size: "md",
+            weight: "bold",
+            wrap: true,
+          },
+          {
+            type: "separator",
+            margin: "lg",
+          },
+          ...reservationDisplayRows(reservation).map(([label, value]) => flexRow(label, value)),
+        ],
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        paddingAll: "16px",
+        contents: [
+          {
+            type: "button",
+            style: "primary",
+            color: "#06a944",
+            action: {
+              type: "uri",
+              label: "予約画面を開く",
+              uri: reservationPageUrl(),
+            },
+          },
+        ],
+      },
+    },
+  };
 }
 
 function setLineSendStatus(message, tone = "") {
@@ -793,25 +1071,32 @@ function setLineSendStatus(message, tone = "") {
 async function sendReservationLineMessage() {
   if (!lastReservation || !lastReservationMessage) return;
   if (lastReservation.lineMessageSent) {
-    setLineSendStatus("LINEへ予約確定メッセージを送信しました", "success");
+    setLineSendStatus("LINEへ予約確定リッチメッセージを送信しました", "success");
     return;
   }
 
   if (window.liff && liff.isInClient?.() && liff.isLoggedIn?.() && typeof liff.sendMessages === "function") {
     try {
-      await liff.sendMessages([{ type: "text", text: lastReservationMessage }]);
-      setLineSendStatus("LINEへ予約確定メッセージを送信しました", "success");
+      await liff.sendMessages([lastReservationFlexMessage || { type: "text", text: lastReservationMessage }]);
+      setLineSendStatus("LINEへ予約確定リッチメッセージを送信しました", "success");
       return;
     } catch (error) {
-      console.warn("LIFF message send failed", error);
+      console.warn("LIFF rich message send failed", error);
+      try {
+        await liff.sendMessages([{ type: "text", text: lastReservationMessage }]);
+        setLineSendStatus("リッチメッセージ送信に失敗したため、テキスト確認文をLINEへ送信しました。", "warning");
+        return;
+      } catch (textError) {
+        console.warn("LIFF text message send failed", textError);
+      }
     }
   }
 
   try {
     await navigator.clipboard?.writeText(lastReservationMessage);
-    setLineSendStatus("LINE送信は本番LIFFまたは予約API設定後に実行されます。確認文はコピーしました。", "warning");
+    setLineSendStatus("LINE送信にはLIFF IDとメッセージ送信権限、または予約API設定が必要です。確認文はコピーしました。", "warning");
   } catch (error) {
-    setLineSendStatus("LINE送信は本番LIFFまたは予約API設定後に実行されます。", "warning");
+    setLineSendStatus("LINE送信にはLIFF IDとメッセージ送信権限、または予約API設定が必要です。", "warning");
   }
 }
 
@@ -891,17 +1176,16 @@ function closeAvatarSheet() {
 }
 
 function openMemberService() {
-  if (!pointsScreen.hidden) closePointsScreen();
-  if (!reservationScreen.hidden) closeReservationScreen();
-  lineTalkScreen.hidden = true;
+  if (pointsScreen && !pointsScreen.hidden) closePointsScreen();
+  if (reservationScreen && !reservationScreen.hidden) closeReservationScreen();
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
   memberServiceScreen.hidden = false;
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function closeMemberService() {
-  memberServiceScreen.hidden = true;
-  lineTalkScreen.hidden = false;
+  returnToLine();
 }
 
 function render() {
@@ -910,6 +1194,7 @@ function render() {
   renderEditor();
   renderAvatars();
   renderReservationMemberOptions();
+  renderMeasurementRecords();
   if (pointsScreen && !pointsScreen.hidden) {
     renderPoints();
   }
@@ -918,13 +1203,13 @@ function render() {
   }
 }
 
-lineBackButton?.addEventListener("click", returnToLine);
-memberMenuButton.addEventListener("click", openMemberService);
-memberCloseButton.addEventListener("click", returnToLine);
-pointsMenuButton.addEventListener("click", openPointsScreen);
-pointsCloseButton.addEventListener("click", returnToLine);
-reservationMenuButton.addEventListener("click", openReservationScreen);
-reservationCloseButton.addEventListener("click", returnToLine);
+lineReturnButton?.addEventListener("click", returnToLine);
+memberMenuButton?.addEventListener("click", openMemberService);
+memberCloseButton?.addEventListener("click", returnToLine);
+pointsMenuButton?.addEventListener("click", openPointsScreen);
+pointsCloseButton?.addEventListener("click", returnToLine);
+reservationMenuButton?.addEventListener("click", openReservationScreen);
+reservationCloseButton?.addEventListener("click", returnToLine);
 reservationDateInput.addEventListener("change", () => {
   selectedReservationHour = null;
   renderReservationSlots();
@@ -955,8 +1240,6 @@ document.addEventListener("keydown", (event) => {
     closeReservationScreen();
   } else if (!pointsScreen.hidden) {
     closePointsScreen();
-  } else if (!memberServiceScreen.hidden) {
-    closeMemberService();
   }
 });
 
@@ -1014,14 +1297,10 @@ addMemberButton.addEventListener("click", () => {
 });
 
 function openInitialScreenFromUrl() {
-  const screen = new URLSearchParams(window.location.search).get("screen");
-  if (screen === "points") {
-    openPointsScreen();
-  } else if (screen === "member") {
-    openMemberService();
-  } else if (["reservation", "measurements", "measurement-reservation"].includes(screen)) {
-    openReservationScreen();
-  }
+  if (lineTalkScreen) lineTalkScreen.hidden = true;
+  if (pointsScreen) pointsScreen.hidden = true;
+  if (reservationScreen) reservationScreen.hidden = true;
+  memberServiceScreen.hidden = false;
 }
 
 render();
