@@ -1461,99 +1461,9 @@ textarea:focus {
 
 .measurement-latest-list {
   display: grid;
-  gap: 9px;
-}
-
-.measurement-latest-item {
-  min-width: 0;
-  display: grid;
-  gap: 9px;
-  padding: 12px;
-  border-radius: 18px;
-  background: #f8fbff;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
-}
-
-.measurement-latest-item.is-empty {
-  color: var(--muted);
-  background: #f4f7fb;
-}
-
-.measurement-member-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 10px;
 }
 
-.measurement-person-row {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.measurement-person-avatar {
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  object-fit: cover;
-  background: #e8f4ed;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
-}
-
-.measurement-person-copy {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.measurement-person-copy strong {
-  min-width: 0;
-  font-size: 16px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.measurement-person-copy > span,
-.measurement-staff {
-  color: var(--green-dark);
-  font-size: 12px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.measurement-latest-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  gap: 8px;
-}
-
-.measurement-latest-meta div {
-  min-width: 0;
-  padding: 8px 10px;
-  border-radius: 13px;
-  background: white;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-}
-
-.measurement-latest-meta dt {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-}
-
-.measurement-latest-meta dd {
-  min-width: 0;
-  margin-top: 2px;
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.measurement-item-inline,
 .measurement-item-chip {
   min-width: 0;
   display: inline-flex;
@@ -1565,41 +1475,14 @@ textarea:focus {
   flex: 0 0 auto;
   min-height: 28px;
   max-width: 46%;
-  padding: 3px 8px 3px 4px;
+  padding: 4px 10px;
   border-radius: 999px;
   color: #075985;
   background: #eaf6ff;
   font-size: 12px;
   font-weight: 1000;
   white-space: nowrap;
-}
-
-.measurement-clothing-icon {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 9px;
-  background: white;
-  font-size: 14px;
-  line-height: 1;
-  box-shadow: inset 0 0 0 1px rgba(11, 141, 227, 0.12);
-}
-
-.measurement-latest-item p {
-  color: #334155;
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.measurement-staff {
-  justify-self: start;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: rgba(6, 169, 68, 0.09);
+  justify-content: center;
 }
 
 .measurement-history-head {
@@ -1946,6 +1829,11 @@ textarea:focus {
   box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07), 0 10px 22px rgba(12, 34, 58, 0.06);
 }
 
+.measurement-purchase-card-empty {
+  background: #f8fbff;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
 .measurement-purchase-top {
   min-width: 0;
   display: flex;
@@ -2073,57 +1961,6 @@ textarea:focus {
   background: #f8fbff;
   font-size: 13px;
   font-weight: 900;
-}
-
-.measurement-value-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.measurement-value-badge {
-  min-width: 72px;
-  display: inline-grid;
-  align-content: center;
-  gap: 2px;
-  padding: 7px 9px;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(11, 141, 227, 0.14), 0 7px 16px rgba(12, 34, 58, 0.06);
-}
-
-.measurement-value-badge > span {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1.15;
-  overflow-wrap: anywhere;
-}
-
-.measurement-value-badge strong {
-  color: #0b5f99;
-  font-size: 19px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.measurement-value-badge small {
-  margin-left: 2px;
-  color: #0472c8;
-  font-size: 11px;
-}
-
-.measurement-value-badge.is-more {
-  min-width: 54px;
-  place-items: center;
-  color: #0b5f99;
-  background: #eef8ff;
-  font-size: 13px;
-  font-weight: 1000;
-}
-
-.measurement-value-empty {
-  width: 100%;
 }
 
 .measurement-purchase-note {
@@ -2702,7 +2539,6 @@ textarea:focus {
   }
 
   .reservation-form-grid,
-  .measurement-latest-meta,
   .measurement-records-hero,
   .measurement-purchase-facts,
   .slot-grid,

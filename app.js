@@ -898,32 +898,6 @@ function renderMeasurementSizeGrid(record, limit = 6) {
   `;
 }
 
-function renderMeasurementValueBadges(record, limit = 4) {
-  if (!record?.values?.length) {
-    return '<div class="measurement-size-empty measurement-value-empty">採寸値未登録</div>';
-  }
-
-  const shownValues = record.values.slice(0, limit);
-  const hiddenCount = record.values.length - shownValues.length;
-
-  return `
-    <div class="measurement-value-badges">
-      ${shownValues
-        .map(([label, value]) => {
-          const parts = splitMeasurementValue(value);
-          return `
-            <span class="measurement-value-badge">
-              <span>${escapeHtml(label)}</span>
-              <strong>${escapeHtml(parts.number)}${parts.unit ? `<small>${escapeHtml(parts.unit)}</small>` : ""}</strong>
-            </span>
-          `;
-        })
-        .join("")}
-      ${hiddenCount > 0 ? `<span class="measurement-value-badge is-more">+${hiddenCount}件</span>` : ""}
-    </div>
-  `;
-}
-
 function renderMeasurementPurchaseCard(record) {
   const itemKind = measurementItemKind(record.item);
   const memberName = measurementMemberName(record.memberId);
@@ -946,7 +920,6 @@ function renderMeasurementPurchaseCard(record) {
           <p>購入品</p>
           <h3>${escapeHtml(record.item)}</h3>
           <span class="measurement-item-chip">
-            <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
             ${escapeHtml(itemKind.label)}
           </span>
         </div>
@@ -965,6 +938,22 @@ function renderMeasurementPurchaseCard(record) {
 
       ${renderMeasurementSizeGrid(record)}
       ${record.note ? `<p class="measurement-purchase-note">${escapeHtml(record.note)}</p>` : ""}
+    </article>
+  `;
+}
+
+function renderMeasurementEmptyPurchaseCard(member, index) {
+  const kind = memberKindLabel(member, index);
+  return `
+    <article class="measurement-purchase-card measurement-purchase-card-empty">
+      <div class="measurement-purchase-top">
+        <span class="measurement-history-person">
+          <img src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
+          <span>${escapeHtml(member.name)}</span>
+        </span>
+        <span class="measurement-history-kind">${escapeHtml(kind)}</span>
+      </div>
+      <div class="measurement-size-empty">まだ採寸記録がありません</div>
     </article>
   `;
 }
@@ -1025,58 +1014,10 @@ function renderMeasurementRecords() {
     measurementLatestList.innerHTML = members
       .map((member, index) => {
         const record = latestMeasurementForMember(member.id);
-        const kind = memberKindLabel(member, index);
         if (!record) {
-          return `
-            <article class="measurement-latest-item is-empty">
-              <div class="measurement-member-row">
-                <span class="measurement-person-row">
-                  <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
-                  <span class="measurement-person-copy">
-                    <strong>${escapeHtml(member.name)}</strong>
-                    <span>${escapeHtml(kind)}</span>
-                  </span>
-                </span>
-              </div>
-              <p>まだ採寸記録がありません</p>
-            </article>
-          `;
+          return renderMeasurementEmptyPurchaseCard(member, index);
         }
-        const itemKind = measurementItemKind(record.item);
-        return `
-          <article class="measurement-latest-item">
-            <div class="measurement-member-row">
-              <span class="measurement-person-row">
-                <img class="measurement-person-avatar" src="${escapeHtml(member.avatar)}" alt="${escapeHtml(member.name)}のアイコン" />
-                <span class="measurement-person-copy">
-                  <strong>${escapeHtml(member.name)}</strong>
-                  <span>${escapeHtml(kind)}</span>
-                </span>
-              </span>
-              <span class="measurement-item-chip">
-                <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
-                ${escapeHtml(itemKind.label)}
-              </span>
-            </div>
-            <dl class="measurement-latest-meta">
-              <div>
-                <dt>いつ</dt>
-                <dd>${escapeHtml(formatMeasurementDate(record.measuredAt))}</dd>
-              </div>
-              <div>
-                <dt>何を</dt>
-                <dd>
-                  <span class="measurement-item-inline">
-                    <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
-                    ${escapeHtml(record.item)}
-                  </span>
-                </dd>
-              </div>
-            </dl>
-            ${renderMeasurementValueBadges(record)}
-            <span class="measurement-staff">入力 ${escapeHtml(record.staff)}</span>
-          </article>
-        `;
+        return renderMeasurementPurchaseCard(record);
       })
       .join("");
   }
@@ -1094,7 +1035,6 @@ function renderMeasurementRecords() {
               <div class="measurement-history-title">
                 <strong>${escapeHtml(record.item)}</strong>
                 <span class="measurement-item-chip">
-                  <span class="measurement-clothing-icon" aria-hidden="true">${escapeHtml(itemKind.icon)}</span>
                   ${escapeHtml(itemKind.label)}
                 </span>
               </div>
