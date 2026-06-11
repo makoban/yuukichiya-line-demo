@@ -898,6 +898,32 @@ function renderMeasurementSizeGrid(record, limit = 6) {
   `;
 }
 
+function renderMeasurementValueBadges(record, limit = 4) {
+  if (!record?.values?.length) {
+    return '<div class="measurement-size-empty measurement-value-empty">採寸値未登録</div>';
+  }
+
+  const shownValues = record.values.slice(0, limit);
+  const hiddenCount = record.values.length - shownValues.length;
+
+  return `
+    <div class="measurement-value-badges">
+      ${shownValues
+        .map(([label, value]) => {
+          const parts = splitMeasurementValue(value);
+          return `
+            <span class="measurement-value-badge">
+              <span>${escapeHtml(label)}</span>
+              <strong>${escapeHtml(parts.number)}${parts.unit ? `<small>${escapeHtml(parts.unit)}</small>` : ""}</strong>
+            </span>
+          `;
+        })
+        .join("")}
+      ${hiddenCount > 0 ? `<span class="measurement-value-badge is-more">+${hiddenCount}件</span>` : ""}
+    </div>
+  `;
+}
+
 function renderMeasurementPurchaseCard(record) {
   const itemKind = measurementItemKind(record.item);
   const memberName = measurementMemberName(record.memberId);
@@ -989,7 +1015,7 @@ function renderMeasurementRecordsPage() {
     : `
       <div class="reservation-status-empty">
         <strong>採寸履歴がありません</strong>
-        <span>店舗側で購入時の採寸記録を登録すると、ここに表示されます</span>
+        <span>店舗側で採寸記録を登録すると、ここに表示されます</span>
       </div>
     `;
 }
@@ -1047,7 +1073,7 @@ function renderMeasurementRecords() {
                 </dd>
               </div>
             </dl>
-            <p>${escapeHtml(measurementValuesText(record))}</p>
+            ${renderMeasurementValueBadges(record)}
             <span class="measurement-staff">入力 ${escapeHtml(record.staff)}</span>
           </article>
         `;
