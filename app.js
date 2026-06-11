@@ -294,7 +294,9 @@ async function initLiff() {
   try {
     await liff.init({ liffId: lineConfig.liffId });
     if (!liff.isLoggedIn()) {
-      liff.login();
+      if (liff.isInClient?.()) {
+        liff.login();
+      }
       return;
     }
     const profile = await liff.getProfile();
