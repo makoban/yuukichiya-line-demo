@@ -6,7 +6,7 @@
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./styles.css?v=20260611-line-return-avatar2" />
+    <link rel="stylesheet" href="./styles.css?v=20260611-contact-info" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
   </head>
@@ -86,6 +86,14 @@
             <label>
               <span>学校名</span>
               <input id="schoolInput" type="text" />
+            </label>
+            <label>
+              <span>電話番号</span>
+              <input id="phoneInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="090-0000-0000" />
+            </label>
+            <label>
+              <span>住所</span>
+              <textarea id="addressInput" rows="2" autocomplete="street-address" placeholder="住所を入力"></textarea>
             </label>
           </div>
         </section>
@@ -236,6 +244,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260611-line-return-avatar2"></script>
+    <script src="./app.js?v=20260611-contact-info"></script>
   </body>
 </html>
