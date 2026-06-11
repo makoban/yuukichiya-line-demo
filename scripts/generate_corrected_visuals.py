@@ -262,7 +262,7 @@ def slide_member():
     d.text((130, 250), "会員情報", font=font(38, 7), fill=GREEN)
     d.text((130, 326), "会員番号 12345678", font=font(27, 6), fill=INK)
     d.text((130, 382), "お名前　山田 由美", font=font(27, 6), fill=INK)
-    d.text((130, 438), "電話番号　090-1234-5678", font=font(23, 5), fill=INK)
+    d.text((130, 438), "会員区分　保護者", font=font(23, 5), fill=INK)
     d.text((130, 494), "代表者区分　親御さん", font=font(23, 5), fill=INK)
     d.rounded_rectangle((130, 670, 445, 735), 22, fill=GREEN)
     center_text(d, (130, 670, 315, 65), "情報を更新する", font(26, 7), PAPER)

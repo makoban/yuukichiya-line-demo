@@ -116,7 +116,6 @@ const reservationCloseButton = document.getElementById("reservationCloseButton")
 const reservationMemberInput = document.getElementById("reservationMemberInput");
 const reservationStoreInput = document.getElementById("reservationStoreInput");
 const reservationDateInput = document.getElementById("reservationDateInput");
-const reservationPhoneInput = document.getElementById("reservationPhoneInput");
 const reservationNoteInput = document.getElementById("reservationNoteInput");
 const slotGrid = document.getElementById("slotGrid");
 const slotSummaryText = document.getElementById("slotSummaryText");
@@ -531,7 +530,6 @@ function demoReservationSeeds() {
       endTime: "12:00",
       childName: "予約済み",
       guardianName: "他のお客様",
-      phone: "",
       memberNumber: "",
       note: "",
       createdAt: new Date().toISOString(),
@@ -546,7 +544,6 @@ function demoReservationSeeds() {
       endTime: "15:00",
       childName: "予約済み",
       guardianName: "他のお客様",
-      phone: "",
       memberNumber: "",
       note: "",
       createdAt: new Date().toISOString(),
@@ -679,7 +676,6 @@ function buildReservationCandidate(hour) {
     childId: child.id,
     childName: child.name,
     guardianName: members[0].name,
-    phone: reservationPhoneInput.value.trim(),
     memberNumber,
     note: reservationNoteInput.value.trim(),
     lineUserId: lineProfile?.userId || "",
@@ -724,7 +720,6 @@ function reserveLocally(candidate) {
 
 async function confirmReservation() {
   if (selectedReservationHour === null) return;
-  if (!reservationPhoneInput.reportValidity()) return;
 
   confirmReservationButton.disabled = true;
   slotSummaryText.textContent = "予約を確認中";
@@ -761,7 +756,6 @@ function showReservationConfirmation(reservation) {
     ["店舗", reservation.store],
     ["対象", reservation.childName],
     ["保護者", reservation.guardianName],
-    ["電話番号", reservation.phone],
     ["会員番号", reservation.memberNumber],
   ];
   if (reservation.note) details.push(["メモ", reservation.note]);
@@ -785,7 +779,6 @@ function buildReservationLineMessage(reservation) {
     `店舗：${reservation.store}`,
     `対象：${reservation.childName}`,
     `保護者：${reservation.guardianName}`,
-    `電話：${reservation.phone}`,
     `会員番号：${reservation.memberNumber}`,
     `受付番号：${reservation.id}${note}`,
   ].join("\n");
