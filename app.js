@@ -189,7 +189,6 @@ const pointBalanceText = document.getElementById("pointBalanceText");
 const pointMemberText = document.getElementById("pointMemberText");
 const pointHistoryList = document.getElementById("pointHistoryList");
 const pointsQrCanvas = document.getElementById("pointsQrCanvas");
-const staffScanButton = document.getElementById("staffScanButton");
 const pointEffect = document.getElementById("pointEffect");
 const pointEffectText = document.getElementById("pointEffectText");
 const latestSyncText = document.getElementById("latestSyncText");
@@ -478,9 +477,6 @@ function formatTransactionDate(value) {
 function renderPoints(options = {}) {
   const rep = members[0];
   pointMemberText.textContent = `${rep.name} 様 / ${memberNumber}`;
-  if (staffScanButton) {
-    staffScanButton.dataset.url = staffPageUrl();
-  }
   drawQrToCanvas(pointsQrCanvas, pointQrSeed());
   renderPointHistory();
 

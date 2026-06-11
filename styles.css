@@ -645,7 +645,6 @@ textarea:focus {
   animation: scanBeam 850ms ease-in-out;
 }
 
-.scan-demo-button,
 .apply-points-button {
   width: 100%;
   min-height: 52px;
