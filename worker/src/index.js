@@ -403,7 +403,7 @@ function reservationDisplayRows(reservation) {
   return rows.filter(([, value]) => value);
 }
 
-function reservationCancelUrl(env, reservation) {
+function reservationStatusUrl(env, reservation) {
   const targetUrl = env.PUBLIC_RESERVATION_URL || "https://liff.line.me/2010371637-PcIXzbgC";
   try {
     const url = new URL(targetUrl);
@@ -475,8 +475,8 @@ function buildReservationFlexMessage(env, reservation) {
             color: "#06a944",
             action: {
               type: "uri",
-              label: "予約キャンセル",
-              uri: reservationCancelUrl(env, reservation),
+              label: "予約状況確認",
+              uri: reservationStatusUrl(env, reservation),
             },
           },
         ],

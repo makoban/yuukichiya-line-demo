@@ -1834,7 +1834,7 @@ function buildReservationFlexMessage(reservation) {
             color: "#06a944",
             action: {
               type: "uri",
-              label: "予約キャンセル",
+              label: "予約状況確認",
               uri: reservationPageUrl(reservation),
             },
           },
