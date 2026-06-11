@@ -10,7 +10,7 @@
     <script src="./config.js"></script>
   </head>
   <body>
-    <main class="phone-shell" aria-label="勇吉屋公式LINE 会員情報デモ">
+    <main class="phone-shell" aria-label="勇吉屋公式LINE 会員情報">
       <header class="line-header">
         <a class="back-link" href="https://lin.ee/7byeeeA" target="_blank" rel="noreferrer" aria-label="勇吉屋公式LINEを開く">
           <span aria-hidden="true">‹</span>
@@ -21,40 +21,47 @@
         </div>
       </header>
 
-      <section class="hero-card">
-        <div class="qr-card">
-          <div class="qr-copy">
-            <p class="eyebrow">代表者アイコン</p>
-            <h2>一番上の人が代表者</h2>
-            <p>アイコンをタップすると変更できます。</p>
-          </div>
-          <button class="qr-avatar-button" id="avatarOpenButton" type="button" aria-label="代表者アイコンを変更">
-            <img id="representativeAvatar" src="./assets/avatars/avatar-04-guardian.png" alt="代表者アイコン" />
-            <span>変更</span>
-          </button>
+      <section class="representative-card" aria-label="代表者枠">
+        <div class="representative-head">
+          <span class="representative-badge">代表者</span>
+          <strong id="representativeName">山田 由美 様</strong>
         </div>
 
-        <div class="member-summary" id="memberSummary"></div>
+        <div class="representative-main">
+          <button class="avatar-button" id="avatarOpenButton" type="button" aria-label="アイコンを変更">
+            <img id="representativeAvatar" src="./assets/avatars/avatar-04-guardian.png" alt="アイコン" />
+            <span>変更</span>
+          </button>
+
+          <div class="qr-panel" aria-label="会員QR">
+            <canvas id="qrCanvas" width="176" height="176"></canvas>
+            <span>QR</span>
+          </div>
+        </div>
+
+        <dl class="representative-details">
+          <div>
+            <dt>会員番号</dt>
+            <dd id="memberNumberText">YK-001234</dd>
+          </div>
+          <div>
+            <dt>生年月日</dt>
+            <dd id="representativeBirthday">1985年6月11日</dd>
+          </div>
+        </dl>
       </section>
 
-      <section class="family-section" aria-label="家族とお子さま情報">
+      <section class="member-section" aria-label="登録メンバー">
         <div class="section-title-row">
-          <div>
-            <p class="section-label">家族・お子さま情報</p>
-            <h2>誕生日から年齢と学年を自動表示</h2>
-          </div>
+          <h2>登録メンバー</h2>
           <button class="mini-button" id="addMemberButton" type="button">追加</button>
         </div>
         <div class="member-list" id="memberList"></div>
       </section>
 
-      <section class="edit-panel" aria-label="会員情報編集">
+      <section class="edit-panel" aria-label="登録情報">
         <div class="section-title-row">
-          <div>
-            <p class="section-label">選択中の情報</p>
-            <h2>デモ入力</h2>
-          </div>
-          <span class="save-pill">自動保存風</span>
+          <h2>登録情報</h2>
         </div>
 
         <div class="editor-grid">
@@ -80,20 +87,12 @@
             <input id="schoolInput" type="text" />
           </label>
         </div>
-
-        <div class="notice-box">
-          <strong>生年月日の利用目的</strong>
-          <span>年齢・学年の自動表示と、学校用品のご案内に使用します。学年は本番では手動修正も可能にします。</span>
-        </div>
       </section>
 
       <section class="avatar-sheet" id="avatarSheet" aria-label="アイコン変更" hidden>
         <div class="avatar-sheet-panel">
           <div class="section-title-row">
-            <div>
-              <p class="section-label">代表者アイコン</p>
-              <h2>アイコンを選択</h2>
-            </div>
+            <h2>アイコン変更</h2>
             <button class="sheet-close" id="avatarCloseButton" type="button">閉じる</button>
           </div>
           <div class="avatar-actions">

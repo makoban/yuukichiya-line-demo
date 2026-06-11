@@ -1,3 +1,5 @@
+const memberNumber = "YK-001234";
+
 const avatarFiles = [
   "avatar-01-student-girl.png",
   "avatar-02-student-boy.png",
@@ -43,13 +45,15 @@ const initialMembers = [
 let members = cloneMembers(initialMembers);
 let selectedId = members[0].id;
 
-const memberSummary = document.getElementById("memberSummary");
 const memberList = document.getElementById("memberList");
 const avatarGrid = document.getElementById("avatarGrid");
 const avatarSheet = document.getElementById("avatarSheet");
 const avatarOpenButton = document.getElementById("avatarOpenButton");
 const avatarCloseButton = document.getElementById("avatarCloseButton");
 const representativeAvatar = document.getElementById("representativeAvatar");
+const representativeName = document.getElementById("representativeName");
+const representativeBirthday = document.getElementById("representativeBirthday");
+const memberNumberText = document.getElementById("memberNumberText");
 const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const roleInput = document.getElementById("roleInput");
@@ -60,10 +64,6 @@ const liffStatus = document.getElementById("liffStatus");
 const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
 
 initLiff();
-
-function today() {
-  return new Date();
-}
 
 function selectedMember() {
   return members.find((member) => member.id === selectedId) || members[0];
@@ -77,62 +77,25 @@ function roleLabel(member, index) {
   return index === 0 ? "代表者" : member.role;
 }
 
-function calcAge(birthday) {
-  const birth = new Date(`${birthday}T00:00:00`);
-  const now = today();
-  let age = now.getFullYear() - birth.getFullYear();
-  const hadBirthday =
-    now.getMonth() > birth.getMonth() ||
-    (now.getMonth() === birth.getMonth() && now.getDate() >= birth.getDate());
-  if (!hadBirthday) age -= 1;
-  return Number.isFinite(age) ? age : null;
+function formatBirthday(value) {
+  const date = new Date(`${value}T00:00:00`);
+  if (!Number.isFinite(date.getTime())) return "未登録";
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
-function calcGrade(birthday) {
-  const birth = new Date(`${birthday}T00:00:00`);
-  if (!Number.isFinite(birth.getFullYear())) return "未入力";
-  const now = today();
-  const academicYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  const month = birth.getMonth() + 1;
-  const day = birth.getDate();
-  const earlyYearAdjustment = month < 4 || (month === 4 && day === 1) ? 1 : 0;
-  const gradeNumber = academicYear - birth.getFullYear() - 6 + earlyYearAdjustment;
-  if (gradeNumber <= 0) return "未就学";
-  if (gradeNumber <= 6) return `小学${gradeNumber}年`;
-  if (gradeNumber <= 9) return `中学${gradeNumber - 6}年`;
-  if (gradeNumber <= 12) return `高校${gradeNumber - 9}年`;
-  return "一般";
-}
-
-function ageText(member) {
-  const age = calcAge(member.birthday);
-  return age === null ? "年齢未入力" : `${age}歳`;
-}
-
-function gradeText(member) {
-  return calcGrade(member.birthday);
-}
-
-function renderSummary() {
+function renderRepresentative() {
   const rep = members[0];
   representativeAvatar.src = rep.avatar;
-  representativeAvatar.alt = `${rep.name}の代表者アイコン`;
-  memberSummary.innerHTML = `
-    <div class="summary-text">
-      <strong>${rep.name} 様</strong>
-      <div class="summary-meta">
-        <span class="chip">会員番号 YK-001234</span>
-        <span class="chip">代表者</span>
-        <span class="chip">${ageText(rep)}</span>
-        <span class="chip">${gradeText(rep)}</span>
-      </div>
-    </div>
-  `;
+  representativeAvatar.alt = `${rep.name}のアイコン`;
+  representativeName.textContent = `${rep.name} 様`;
+  memberNumberText.textContent = memberNumber;
+  representativeBirthday.textContent = formatBirthday(rep.birthday);
+  drawQr(`${memberNumber}:${rep.name}:${rep.birthday}`);
 }
 
 async function initLiff() {
   if (!lineConfig.liffId || !window.liff) {
-    liffStatus.textContent = "勇吉屋 公式LINE デモ";
+    liffStatus.textContent = "勇吉屋 公式LINE";
     return;
   }
 
@@ -152,7 +115,7 @@ async function initLiff() {
       render();
     }
   } catch (error) {
-    liffStatus.textContent = "LIFF未接続デモ";
+    liffStatus.textContent = "勇吉屋 公式LINE";
     console.warn("LIFF initialization failed", error);
   }
 }
@@ -162,17 +125,13 @@ function renderMembers() {
     .map((member, index) => {
       const active = member.id === selectedId ? " is-active" : "";
       const representative = index === 0 ? " is-representative" : "";
-      const school = member.school || "学校登録なし";
+      const detail = [roleLabel(member, index), formatBirthday(member.birthday)].filter(Boolean).join(" / ");
       return `
         <button class="member-card${active}${representative}" type="button" data-id="${member.id}">
           <img src="${member.avatar}" alt="${member.name}のアイコン" />
           <span class="member-card-main">
             <strong>${member.name}</strong>
-            <span class="member-card-detail">${roleLabel(member, index)} / ${school}</span>
-          </span>
-          <span class="member-age">
-            <b>${ageText(member)}</b>
-            <b>${gradeText(member)}</b>
+            <span class="member-card-detail">${detail}</span>
           </span>
         </button>
       `;
@@ -196,7 +155,7 @@ function renderEditor() {
 }
 
 function renderAvatars() {
-  const current = selectedMember().avatar;
+  const current = members[0].avatar;
   avatarGrid.innerHTML = avatarFiles
     .map((file) => {
       const src = `./assets/avatars/${file}`;
@@ -211,7 +170,8 @@ function renderAvatars() {
 
   document.querySelectorAll(".avatar-option").forEach((button) => {
     button.addEventListener("click", () => {
-      selectedMember().avatar = button.dataset.src;
+      members[0].avatar = button.dataset.src;
+      selectedId = members[0].id;
       render();
       closeAvatarSheet();
     });
@@ -220,9 +180,56 @@ function renderAvatars() {
 
 function updateSelected(key, value) {
   selectedMember()[key] = value;
-  renderSummary();
+  renderRepresentative();
   renderMembers();
   renderAvatars();
+}
+
+function drawQr(seed) {
+  const canvas = document.getElementById("qrCanvas");
+  const ctx = canvas.getContext("2d");
+  const size = canvas.width;
+  const cells = 25;
+  const cell = Math.floor(size / cells);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, size, size);
+
+  function hashAt(index) {
+    let hash = 2166136261;
+    const text = `${seed}:${index}`;
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function finder(x, y) {
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(x * cell, y * cell, cell * 7, cell * 7);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect((x + 1) * cell, (y + 1) * cell, cell * 5, cell * 5);
+    ctx.fillStyle = "#111827";
+    ctx.fillRect((x + 2) * cell, (y + 2) * cell, cell * 3, cell * 3);
+  }
+
+  finder(1, 1);
+  finder(17, 1);
+  finder(1, 17);
+
+  ctx.fillStyle = "#111827";
+  for (let y = 0; y < cells; y += 1) {
+    for (let x = 0; x < cells; x += 1) {
+      const inFinder =
+        (x >= 1 && x < 8 && y >= 1 && y < 8) ||
+        (x >= 17 && x < 24 && y >= 1 && y < 8) ||
+        (x >= 1 && x < 8 && y >= 17 && y < 24);
+      if (inFinder) continue;
+      if (hashAt(y * cells + x) % 3 === 0) {
+        ctx.fillRect(x * cell, y * cell, cell, cell);
+      }
+    }
+  }
 }
 
 function openAvatarSheet() {
@@ -238,7 +245,7 @@ function closeAvatarSheet() {
 }
 
 function render() {
-  renderSummary();
+  renderRepresentative();
   renderMembers();
   renderEditor();
   renderAvatars();
@@ -264,7 +271,8 @@ photoInput.addEventListener("change", (event) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    selectedMember().avatar = reader.result;
+    members[0].avatar = reader.result;
+    selectedId = members[0].id;
     render();
     closeAvatarSheet();
   };
