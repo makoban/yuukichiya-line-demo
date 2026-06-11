@@ -1,0 +1,35 @@
+{
+  "size": {
+    "width": 2500,
+    "height": 1686
+  },
+  "selected": true,
+  "name": "勇吉屋 公式LINEメニュー 6分割",
+  "chatBarText": "メニューをひらく",
+  "areas": [
+    {
+      "bounds": { "x": 0, "y": 0, "width": 833, "height": 843 },
+      "action": { "type": "uri", "uri": "{{BASE_URL}}/" }
+    },
+    {
+      "bounds": { "x": 833, "y": 0, "width": 834, "height": 843 },
+      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=points" }
+    },
+    {
+      "bounds": { "x": 1667, "y": 0, "width": 833, "height": 843 },
+      "action": { "type": "uri", "uri": "{{MEASUREMENT_RESERVATION_URL}}" }
+    },
+    {
+      "bounds": { "x": 0, "y": 843, "width": 833, "height": 843 },
+      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=size-records" }
+    },
+    {
+      "bounds": { "x": 833, "y": 843, "width": 834, "height": 843 },
+      "action": { "type": "uri", "uri": "{{EC_URL}}" }
+    },
+    {
+      "bounds": { "x": 1667, "y": 843, "width": 833, "height": 843 },
+      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=coupon" }
+    }
+  ]
+}
