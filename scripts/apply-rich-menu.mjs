@@ -7,7 +7,9 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const baseUrl = process.env.YUUKICHIYA_BASE_URL;
-const measurementReservationUrl = process.env.YUUKICHIYA_MEASUREMENT_RESERVATION_URL || baseUrl;
+const normalizedBaseUrl = baseUrl ? baseUrl.replace(/\/$/, "") : "";
+const measurementReservationUrl =
+  process.env.YUUKICHIYA_MEASUREMENT_RESERVATION_URL || `${normalizedBaseUrl}/?screen=reservation`;
 const ecUrl = process.env.YUUKICHIYA_EC_URL || "https://yuukichiya.base.shop/";
 const imagePath = path.join(rootDir, "rich-menu", "yuukichiya_rich_menu_6_2500x1686_upload.jpg");
 const templatePath = path.join(rootDir, "rich-menu", "rich-menu-template.json");
@@ -22,7 +24,7 @@ if (!baseUrl || !baseUrl.startsWith("https://")) {
 
 function fillTemplate(template) {
   return template
-    .replaceAll("{{BASE_URL}}", baseUrl.replace(/\/$/, ""))
+    .replaceAll("{{BASE_URL}}", normalizedBaseUrl)
     .replaceAll("{{MEASUREMENT_RESERVATION_URL}}", measurementReservationUrl)
     .replaceAll("{{EC_URL}}", ecUrl);
 }

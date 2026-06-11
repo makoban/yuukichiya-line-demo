@@ -12,11 +12,15 @@
 - LINE DevelopersのProvider / Channel
 - LIFFアプリのEndpoint URL
 - LIFF ID
+- LIFFのメッセージ送信用スコープ、または予約APIからMessaging APIで送信する方針
 - リッチメニュー各ボタンの遷移先URL
 - Messaging APIで設定する場合はチャネルアクセストークン
+- 採寸予約APIの公開URL
+- 本店/高橋店など予約対象店舗の確定リスト
 
 今回共有された友だち追加URL:
 
 - https://lin.ee/7byeeeA
 
 初期デモでは、リッチメニューの「会員情報」にこのデモページURLを設定すれば見せられます。
+採寸予約は `https://makoban.github.io/yuukichiya-line-demo/?screen=reservation` で直接開けます。

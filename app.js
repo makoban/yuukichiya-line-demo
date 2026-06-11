@@ -1,4 +1,5 @@
 const memberNumber = "YK-001234";
+const initialPointBalance = 1250;
 
 const avatarFiles = [
   "avatar-01-student-girl.png",
@@ -21,6 +22,7 @@ const initialMembers = [
     name: "山田 由美",
     birthday: "1985-06-11",
     role: "代表者",
+    gender: "女性",
     school: "",
     avatar: "./assets/avatars/avatar-04-guardian.png",
   },
@@ -29,6 +31,7 @@ const initialMembers = [
     name: "山田 花子",
     birthday: "2013-08-20",
     role: "生徒",
+    gender: "女性",
     school: "豊田市立さくら中学校",
     avatar: "./assets/avatars/avatar-01-student-girl.png",
   },
@@ -37,6 +40,7 @@ const initialMembers = [
     name: "山田 太郎",
     birthday: "2015-05-12",
     role: "生徒",
+    gender: "男性",
     school: "豊田市立みどり小学校",
     avatar: "./assets/avatars/avatar-02-student-boy.png",
   },
@@ -44,6 +48,34 @@ const initialMembers = [
 
 let members = cloneMembers(initialMembers);
 let selectedId = members[0].id;
+let pointBalance = initialPointBalance;
+let selectedPointDelta = 100;
+let pointTransactions = [
+  {
+    id: "pt-1",
+    delta: 450,
+    reason: "学生服購入",
+    staff: "本店",
+    createdAt: "2026-06-08T14:20:00+09:00",
+    balanceAfter: 1250,
+  },
+  {
+    id: "pt-2",
+    delta: -100,
+    reason: "補正サービス利用",
+    staff: "本店",
+    createdAt: "2026-05-28T16:05:00+09:00",
+    balanceAfter: 800,
+  },
+  {
+    id: "pt-3",
+    delta: 300,
+    reason: "紙カードから移行",
+    staff: "高橋店",
+    createdAt: "2026-05-02T11:45:00+09:00",
+    balanceAfter: 900,
+  },
+];
 
 const memberList = document.getElementById("memberList");
 const avatarGrid = document.getElementById("avatarGrid");
@@ -56,12 +88,59 @@ const representativeBirthday = document.getElementById("representativeBirthday")
 const memberNumberText = document.getElementById("memberNumberText");
 const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
-const roleInput = document.getElementById("roleInput");
+const genderInput = document.getElementById("genderInput");
 const schoolInput = document.getElementById("schoolInput");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
 const liffStatus = document.getElementById("liffStatus");
+const memberMenuButton = document.getElementById("memberMenuButton");
+const pointsMenuButton = document.getElementById("pointsMenuButton");
+const pointsScreen = document.getElementById("pointsScreen");
+const pointsCloseButton = document.getElementById("pointsCloseButton");
+const pointBalanceText = document.getElementById("pointBalanceText");
+const pointMemberText = document.getElementById("pointMemberText");
+const pointHistoryList = document.getElementById("pointHistoryList");
+const pointsQrCanvas = document.getElementById("pointsQrCanvas");
+const largeQrFrame = document.getElementById("largeQrFrame");
+const staffScanButton = document.getElementById("staffScanButton");
+const staffSheet = document.getElementById("staffSheet");
+const staffCloseButton = document.getElementById("staffCloseButton");
+const staffMemberName = document.getElementById("staffMemberName");
+const staffCurrentPoints = document.getElementById("staffCurrentPoints");
+const staffDeltaInput = document.getElementById("staffDeltaInput");
+const staffReasonInput = document.getElementById("staffReasonInput");
+const applyPointsButton = document.getElementById("applyPointsButton");
+const pointEffect = document.getElementById("pointEffect");
+const pointEffectText = document.getElementById("pointEffectText");
+const latestSyncText = document.getElementById("latestSyncText");
 const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
+const reservationScreen = document.getElementById("reservationScreen");
+const reservationMenuButton = document.getElementById("reservationMenuButton");
+const reservationCloseButton = document.getElementById("reservationCloseButton");
+const reservationMemberInput = document.getElementById("reservationMemberInput");
+const reservationStoreInput = document.getElementById("reservationStoreInput");
+const reservationDateInput = document.getElementById("reservationDateInput");
+const reservationPhoneInput = document.getElementById("reservationPhoneInput");
+const reservationNoteInput = document.getElementById("reservationNoteInput");
+const slotGrid = document.getElementById("slotGrid");
+const slotSummaryText = document.getElementById("slotSummaryText");
+const confirmReservationButton = document.getElementById("confirmReservationButton");
+const reservationConfirmation = document.getElementById("reservationConfirmation");
+const reservationConfirmedTime = document.getElementById("reservationConfirmedTime");
+const reservationConfirmationDetails = document.getElementById("reservationConfirmationDetails");
+const lineSendStatus = document.getElementById("lineSendStatus");
+const sendLineMessageButton = document.getElementById("sendLineMessageButton");
+const reservationStorageKey = "yuukichiya.measurementReservations.v1";
+const reservationSlotHours = Array.from({ length: 8 }, (_, index) => index + 10);
+const reservationStores =
+  Array.isArray(lineConfig.reservationStores) && lineConfig.reservationStores.length > 0
+    ? lineConfig.reservationStores
+    : ["本店", "高橋店"];
+
+let selectedReservationHour = null;
+let lastReservation = null;
+let lastReservationMessage = "";
+let lineProfile = null;
 
 initLiff();
 
@@ -73,14 +152,30 @@ function cloneMembers(list) {
   return list.map((member) => ({ ...member }));
 }
 
-function roleLabel(member, index) {
-  return index === 0 ? "代表者" : member.role;
+function memberKindLabel(member, index) {
+  return index === 0 ? "代表者" : gradeText(member.birthday);
 }
 
 function formatBirthday(value) {
   const date = new Date(`${value}T00:00:00`);
   if (!Number.isFinite(date.getTime())) return "未登録";
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function gradeText(value) {
+  const birth = new Date(`${value}T00:00:00`);
+  if (!Number.isFinite(birth.getTime())) return "学年未登録";
+  const now = new Date();
+  const academicYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  const month = birth.getMonth() + 1;
+  const day = birth.getDate();
+  const earlyYearAdjustment = month < 4 || (month === 4 && day === 1) ? 1 : 0;
+  const gradeNumber = academicYear - birth.getFullYear() - 6 + earlyYearAdjustment;
+  if (gradeNumber <= 0) return "未就学";
+  if (gradeNumber <= 6) return `小学${gradeNumber}年`;
+  if (gradeNumber <= 9) return `中学${gradeNumber - 6}年`;
+  if (gradeNumber <= 12) return `高校${gradeNumber - 9}年`;
+  return "卒業生";
 }
 
 function renderRepresentative() {
@@ -90,7 +185,11 @@ function renderRepresentative() {
   representativeName.textContent = `${rep.name} 様`;
   memberNumberText.textContent = memberNumber;
   representativeBirthday.textContent = formatBirthday(rep.birthday);
-  drawQr(`${memberNumber}:${rep.name}:${rep.birthday}`);
+  const qrSeed = pointQrSeed();
+  drawQr(qrSeed);
+  if (pointsScreen && !pointsScreen.hidden) {
+    renderPoints();
+  }
 }
 
 async function initLiff() {
@@ -106,6 +205,7 @@ async function initLiff() {
       return;
     }
     const profile = await liff.getProfile();
+    lineProfile = profile;
     liffStatus.textContent = "LINE連携中";
     if (profile?.displayName) {
       members[0].name = profile.displayName;
@@ -125,10 +225,12 @@ function renderMembers() {
     .map((member, index) => {
       const active = member.id === selectedId ? " is-active" : "";
       const representative = index === 0 ? " is-representative" : "";
-      const detail = [roleLabel(member, index), formatBirthday(member.birthday)].filter(Boolean).join(" / ");
+      const detail = [memberKindLabel(member, index), member.gender, formatBirthday(member.birthday)].filter(Boolean).join(" / ");
       return `
         <button class="member-card${active}${representative}" type="button" data-id="${member.id}">
-          <img src="${member.avatar}" alt="${member.name}のアイコン" />
+          <span class="member-avatar-frame">
+            <img src="${member.avatar}" alt="${member.name}のアイコン" />
+          </span>
           <span class="member-card-main">
             <strong>${member.name}</strong>
             <span class="member-card-detail">${detail}</span>
@@ -150,7 +252,7 @@ function renderEditor() {
   const member = selectedMember();
   nameInput.value = member.name;
   birthdayInput.value = member.birthday;
-  roleInput.value = member.role;
+  genderInput.value = member.gender || "未回答";
   schoolInput.value = member.school;
 }
 
@@ -162,7 +264,9 @@ function renderAvatars() {
       const active = current.endsWith(file) ? " is-active" : "";
       return `
         <button class="avatar-option${active}" type="button" data-src="${src}" aria-label="アイコンを選択">
-          <img src="${src}" alt="" />
+          <span class="avatar-option-frame">
+            <img src="${src}" alt="" />
+          </span>
         </button>
       `;
     })
@@ -178,6 +282,525 @@ function renderAvatars() {
   });
 }
 
+function pointQrSeed() {
+  const rep = members[0];
+  return `yuukichiya:point:${memberNumber}:${rep.name}:${rep.birthday}:demo-token-20260611`;
+}
+
+function formatPoints(value) {
+  return `${value.toLocaleString("ja-JP")}pt`;
+}
+
+function formatTransactionDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "日時未登録";
+  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function renderPoints(options = {}) {
+  const rep = members[0];
+  pointMemberText.textContent = `${rep.name} 様 / ${memberNumber}`;
+  drawQrToCanvas(pointsQrCanvas, pointQrSeed());
+  renderPointHistory();
+
+  if (typeof options.animateFrom === "number") {
+    animatePointBalance(options.animateFrom, pointBalance);
+    flashPointUpdate(options.effectDelta);
+  } else {
+    pointBalanceText.textContent = formatPoints(pointBalance);
+  }
+}
+
+function renderPointHistory() {
+  pointHistoryList.innerHTML = pointTransactions
+    .slice(0, 5)
+    .map((transaction) => {
+      const isMinus = transaction.delta < 0;
+      const deltaText = `${transaction.delta > 0 ? "+" : ""}${transaction.delta}pt`;
+      return `
+        <div class="point-history-item">
+          <span>
+            <strong>${transaction.reason}</strong>
+            <span>${formatTransactionDate(transaction.createdAt)} / ${transaction.staff} / 残高 ${formatPoints(transaction.balanceAfter)}</span>
+          </span>
+          <strong class="point-delta${isMinus ? " is-minus" : ""}">${deltaText}</strong>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function animatePointBalance(from, to) {
+  const duration = 720;
+  const started = performance.now();
+
+  function tick(now) {
+    const progress = Math.min((now - started) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(from + (to - from) * eased);
+    pointBalanceText.textContent = formatPoints(value);
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      pointBalanceText.textContent = formatPoints(to);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+function flashPointUpdate(delta) {
+  const effectDelta = typeof delta === "number" ? delta : 0;
+  const deltaText = `${effectDelta > 0 ? "+" : ""}${effectDelta}pt`;
+
+  document.querySelector(".points-hero")?.classList.remove("is-updating");
+  pointEffectText.classList.toggle("is-minus", effectDelta < 0);
+  pointEffectText.textContent = deltaText;
+  pointEffect.hidden = false;
+
+  requestAnimationFrame(() => {
+    document.querySelector(".points-hero")?.classList.add("is-updating");
+  });
+
+  const now = new Date();
+  latestSyncText.textContent = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} 反映`;
+
+  window.setTimeout(() => {
+    pointEffect.hidden = true;
+    document.querySelector(".points-hero")?.classList.remove("is-updating");
+  }, 1120);
+}
+
+function openPointsScreen() {
+  if (!reservationScreen.hidden) closeReservationScreen();
+  pointsScreen.hidden = false;
+  document.body.classList.add("points-open");
+  renderPoints();
+}
+
+function closePointsScreen() {
+  closeStaffSheet();
+  pointsScreen.hidden = true;
+  document.body.classList.remove("points-open");
+}
+
+function startStaffScanDemo() {
+  largeQrFrame.classList.remove("is-scanning");
+  requestAnimationFrame(() => {
+    largeQrFrame.classList.add("is-scanning");
+  });
+  window.setTimeout(() => {
+    largeQrFrame.classList.remove("is-scanning");
+    openStaffSheet();
+  }, 850);
+}
+
+function openStaffSheet() {
+  staffSheet.hidden = false;
+  document.body.classList.add("staff-open");
+  renderStaffPanel();
+}
+
+function closeStaffSheet() {
+  if (!staffSheet.hidden) {
+    staffSheet.hidden = true;
+    document.body.classList.remove("staff-open");
+  }
+}
+
+function renderStaffPanel() {
+  const rep = members[0];
+  staffMemberName.textContent = `${rep.name} 様`;
+  staffCurrentPoints.textContent = formatPoints(pointBalance);
+  staffDeltaInput.value = String(selectedPointDelta);
+  document.querySelectorAll(".staff-delta-button").forEach((button) => {
+    button.classList.toggle("is-active", Number(button.dataset.delta) === selectedPointDelta);
+  });
+}
+
+function setSelectedPointDelta(value) {
+  selectedPointDelta = value;
+  staffDeltaInput.value = String(value);
+  renderStaffPanel();
+}
+
+function applyPointAdjustment() {
+  const requestedDelta = Number.parseInt(staffDeltaInput.value, 10);
+  if (!Number.isFinite(requestedDelta) || requestedDelta === 0) {
+    staffDeltaInput.focus();
+    return;
+  }
+
+  const previousBalance = pointBalance;
+  pointBalance = Math.max(0, pointBalance + requestedDelta);
+  const actualDelta = pointBalance - previousBalance;
+  if (actualDelta === 0) {
+    staffDeltaInput.focus();
+    return;
+  }
+
+  pointTransactions = [
+    {
+      id: `pt-${Date.now()}`,
+      delta: actualDelta,
+      reason: staffReasonInput.value,
+      staff: "本店スタッフ",
+      createdAt: new Date().toISOString(),
+      balanceAfter: pointBalance,
+    },
+    ...pointTransactions,
+  ];
+
+  selectedPointDelta = actualDelta;
+  closeStaffSheet();
+  renderPoints({ animateFrom: previousBalance, effectDelta: actualDelta });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function toDateInputValue(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function addDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function defaultReservationDate() {
+  const now = new Date();
+  return toDateInputValue(now.getHours() >= 17 ? addDays(now, 1) : now);
+}
+
+function formatReservationDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  if (!Number.isFinite(date.getTime())) return value;
+  return `${year}年${month}月${day}日（${weekdays[date.getDay()]}）`;
+}
+
+function timeRangeLabel(hour) {
+  return `${String(hour).padStart(2, "0")}:00-${String(hour + 1).padStart(2, "0")}:00`;
+}
+
+function isPastReservationSlot(dateValue, hour) {
+  const today = toDateInputValue(new Date());
+  if (dateValue < today) return true;
+  if (dateValue > today) return false;
+  return hour <= new Date().getHours();
+}
+
+function demoReservationSeeds() {
+  const tomorrow = toDateInputValue(addDays(new Date(), 1));
+  const twoDaysLater = toDateInputValue(addDays(new Date(), 2));
+  return [
+    {
+      id: "YK-M-DEMO-001",
+      date: tomorrow,
+      store: "本店",
+      hour: 11,
+      startTime: "11:00",
+      endTime: "12:00",
+      childName: "予約済み",
+      guardianName: "他のお客様",
+      phone: "",
+      memberNumber: "",
+      note: "",
+      createdAt: new Date().toISOString(),
+      demoSeed: true,
+    },
+    {
+      id: "YK-M-DEMO-002",
+      date: twoDaysLater,
+      store: "高橋店",
+      hour: 14,
+      startTime: "14:00",
+      endTime: "15:00",
+      childName: "予約済み",
+      guardianName: "他のお客様",
+      phone: "",
+      memberNumber: "",
+      note: "",
+      createdAt: new Date().toISOString(),
+      demoSeed: true,
+    },
+  ];
+}
+
+function readReservations() {
+  try {
+    const saved = window.localStorage.getItem(reservationStorageKey);
+    if (saved) {
+      const reservations = JSON.parse(saved);
+      return Array.isArray(reservations) ? reservations : [];
+    }
+    const seeds = demoReservationSeeds();
+    writeReservations(seeds);
+    return seeds;
+  } catch (error) {
+    console.warn("Reservation storage is unavailable", error);
+    return demoReservationSeeds();
+  }
+}
+
+function writeReservations(reservations) {
+  try {
+    window.localStorage.setItem(reservationStorageKey, JSON.stringify(reservations));
+  } catch (error) {
+    console.warn("Reservation storage write failed", error);
+  }
+}
+
+function isReservationTaken(reservations, date, store, hour) {
+  return reservations.some((reservation) => reservation.date === date && reservation.store === store && Number(reservation.hour) === hour);
+}
+
+function renderReservationMemberOptions() {
+  const current = reservationMemberInput.value;
+  const childMembers = members.filter((member, index) => index > 0 || member.role === "生徒");
+  const options = (childMembers.length ? childMembers : members)
+    .map((member) => `<option value="${escapeHtml(member.id)}">${escapeHtml(member.name)}</option>`)
+    .join("");
+  reservationMemberInput.innerHTML = options;
+  if (members.some((member) => member.id === current)) {
+    reservationMemberInput.value = current;
+  }
+}
+
+function renderReservationStores() {
+  const current = reservationStoreInput.value;
+  reservationStoreInput.innerHTML = reservationStores
+    .map((store) => `<option value="${escapeHtml(store)}">${escapeHtml(store)}</option>`)
+    .join("");
+  if (reservationStores.includes(current)) {
+    reservationStoreInput.value = current;
+  }
+}
+
+function renderReservationSlots() {
+  const date = reservationDateInput.value;
+  const store = reservationStoreInput.value;
+  const reservations = readReservations();
+  let availableCount = 0;
+
+  if (selectedReservationHour !== null) {
+    const unavailable =
+      isReservationTaken(reservations, date, store, selectedReservationHour) ||
+      isPastReservationSlot(date, selectedReservationHour);
+    if (unavailable) selectedReservationHour = null;
+  }
+
+  slotGrid.innerHTML = reservationSlotHours
+    .map((hour) => {
+      const taken = isReservationTaken(reservations, date, store, hour);
+      const past = isPastReservationSlot(date, hour);
+      const disabled = taken || past;
+      const selected = selectedReservationHour === hour;
+      if (!disabled) availableCount += 1;
+      const stateText = taken ? "予約済み" : past ? "受付終了" : "空き";
+      return `
+        <button class="slot-button${selected ? " is-selected" : ""}" type="button" data-hour="${hour}"${disabled ? " disabled" : ""}>
+          ${timeRangeLabel(hour)}
+          <span>${stateText}</span>
+        </button>
+      `;
+    })
+    .join("");
+
+  slotSummaryText.textContent = `${availableCount}枠空き`;
+  confirmReservationButton.disabled = selectedReservationHour === null;
+}
+
+function openReservationScreen() {
+  closeStaffSheet();
+  if (!pointsScreen.hidden) closePointsScreen();
+  renderReservationMemberOptions();
+  renderReservationStores();
+  reservationDateInput.min = toDateInputValue(new Date());
+  if (!reservationDateInput.value || reservationDateInput.value < reservationDateInput.min) {
+    reservationDateInput.value = defaultReservationDate();
+  }
+  selectedReservationHour = null;
+  reservationConfirmation.hidden = true;
+  setLineSendStatus("LINEメッセージを準備中");
+  reservationScreen.hidden = false;
+  document.body.classList.add("reservation-open");
+  renderReservationSlots();
+}
+
+function closeReservationScreen() {
+  reservationScreen.hidden = true;
+  document.body.classList.remove("reservation-open");
+}
+
+function selectedReservationMember() {
+  return members.find((member) => member.id === reservationMemberInput.value) || members[1] || members[0];
+}
+
+function buildReservationCandidate(hour) {
+  const child = selectedReservationMember();
+  return {
+    id: `YK-M-${Date.now().toString(36).toUpperCase()}`,
+    date: reservationDateInput.value,
+    store: reservationStoreInput.value,
+    hour,
+    startTime: `${String(hour).padStart(2, "0")}:00`,
+    endTime: `${String(hour + 1).padStart(2, "0")}:00`,
+    childId: child.id,
+    childName: child.name,
+    guardianName: members[0].name,
+    phone: reservationPhoneInput.value.trim(),
+    memberNumber,
+    note: reservationNoteInput.value.trim(),
+    lineUserId: lineProfile?.userId || "",
+    createdAt: new Date().toISOString(),
+  };
+}
+
+async function reserveOnServer(candidate) {
+  const response = await fetch(lineConfig.reservationApiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(candidate),
+  });
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (error) {
+    data = { raw: text };
+  }
+  if (response.status === 409) {
+    const conflict = new Error("この時間は先に予約済みになりました。");
+    conflict.code = "slot_taken";
+    throw conflict;
+  }
+  if (!response.ok) {
+    throw new Error(data.message || `予約APIでエラーが発生しました: ${response.status}`);
+  }
+  return { ...candidate, ...(data.reservation || {}), lineMessageSent: Boolean(data.lineMessageSent) };
+}
+
+function reserveLocally(candidate) {
+  const reservations = readReservations();
+  if (isReservationTaken(reservations, candidate.date, candidate.store, candidate.hour)) {
+    const conflict = new Error("この時間は先に予約済みになりました。");
+    conflict.code = "slot_taken";
+    throw conflict;
+  }
+  writeReservations([...reservations, candidate]);
+  return candidate;
+}
+
+async function confirmReservation() {
+  if (selectedReservationHour === null) return;
+  if (!reservationPhoneInput.reportValidity()) return;
+
+  confirmReservationButton.disabled = true;
+  slotSummaryText.textContent = "予約を確認中";
+  const candidate = buildReservationCandidate(selectedReservationHour);
+
+  try {
+    const reservation = lineConfig.reservationApiUrl
+      ? await reserveOnServer(candidate)
+      : reserveLocally(candidate);
+    lastReservation = reservation;
+    lastReservationMessage = buildReservationLineMessage(reservation);
+    selectedReservationHour = null;
+    renderReservationSlots();
+    showReservationConfirmation(reservation);
+    await sendReservationLineMessage();
+  } catch (error) {
+    if (error.code === "slot_taken") {
+      selectedReservationHour = null;
+      renderReservationSlots();
+      slotSummaryText.textContent = "この時間は予約済みです";
+      return;
+    }
+    slotSummaryText.textContent = "予約できませんでした";
+    setLineSendStatus(error.message || "予約処理でエラーが発生しました", "warning");
+  } finally {
+    renderReservationSlots();
+  }
+}
+
+function showReservationConfirmation(reservation) {
+  reservationConfirmedTime.textContent = `${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`;
+  const details = [
+    ["受付番号", reservation.id],
+    ["店舗", reservation.store],
+    ["対象", reservation.childName],
+    ["保護者", reservation.guardianName],
+    ["電話番号", reservation.phone],
+    ["会員番号", reservation.memberNumber],
+  ];
+  if (reservation.note) details.push(["メモ", reservation.note]);
+  reservationConfirmationDetails.innerHTML = details
+    .map(([label, value]) => `
+      <div>
+        <dt>${escapeHtml(label)}</dt>
+        <dd>${escapeHtml(value)}</dd>
+      </div>
+    `)
+    .join("");
+  reservationConfirmation.hidden = false;
+  reservationConfirmation.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function buildReservationLineMessage(reservation) {
+  const note = reservation.note ? `\nメモ：${reservation.note}` : "";
+  return [
+    "採寸予約が確定しました。",
+    `日時：${formatReservationDate(reservation.date)} ${timeRangeLabel(Number(reservation.hour))}`,
+    `店舗：${reservation.store}`,
+    `対象：${reservation.childName}`,
+    `保護者：${reservation.guardianName}`,
+    `電話：${reservation.phone}`,
+    `会員番号：${reservation.memberNumber}`,
+    `受付番号：${reservation.id}${note}`,
+  ].join("\n");
+}
+
+function setLineSendStatus(message, tone = "") {
+  lineSendStatus.classList.remove("is-success", "is-warning");
+  if (tone) lineSendStatus.classList.add(`is-${tone}`);
+  lineSendStatus.textContent = message;
+}
+
+async function sendReservationLineMessage() {
+  if (!lastReservation || !lastReservationMessage) return;
+  if (lastReservation.lineMessageSent) {
+    setLineSendStatus("LINEへ予約確定メッセージを送信しました", "success");
+    return;
+  }
+
+  if (window.liff && liff.isInClient?.() && liff.isLoggedIn?.() && typeof liff.sendMessages === "function") {
+    try {
+      await liff.sendMessages([{ type: "text", text: lastReservationMessage }]);
+      setLineSendStatus("LINEへ予約確定メッセージを送信しました", "success");
+      return;
+    } catch (error) {
+      console.warn("LIFF message send failed", error);
+    }
+  }
+
+  try {
+    await navigator.clipboard?.writeText(lastReservationMessage);
+    setLineSendStatus("LINE送信は本番LIFFまたは予約API設定後に実行されます。確認文はコピーしました。", "warning");
+  } catch (error) {
+    setLineSendStatus("LINE送信は本番LIFFまたは予約API設定後に実行されます。", "warning");
+  }
+}
+
 function updateSelected(key, value) {
   selectedMember()[key] = value;
   renderRepresentative();
@@ -186,13 +809,22 @@ function updateSelected(key, value) {
 }
 
 function drawQr(seed) {
-  const canvas = document.getElementById("qrCanvas");
+  drawQrToCanvas(document.getElementById("qrCanvas"), seed);
+}
+
+function drawQrToCanvas(canvas, seed) {
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
   const size = canvas.width;
   const cells = 25;
   const cell = Math.floor(size / cells);
+  const offset = Math.floor((size - cell * cells) / 2);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, size, size);
+
+  function fillCellRect(x, y, width, height) {
+    ctx.fillRect(offset + x * cell, offset + y * cell, cell * width, cell * height);
+  }
 
   function hashAt(index) {
     let hash = 2166136261;
@@ -206,11 +838,11 @@ function drawQr(seed) {
 
   function finder(x, y) {
     ctx.fillStyle = "#111827";
-    ctx.fillRect(x * cell, y * cell, cell * 7, cell * 7);
+    fillCellRect(x, y, 7, 7);
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect((x + 1) * cell, (y + 1) * cell, cell * 5, cell * 5);
+    fillCellRect(x + 1, y + 1, 5, 5);
     ctx.fillStyle = "#111827";
-    ctx.fillRect((x + 2) * cell, (y + 2) * cell, cell * 3, cell * 3);
+    fillCellRect(x + 2, y + 2, 3, 3);
   }
 
   finder(1, 1);
@@ -226,7 +858,7 @@ function drawQr(seed) {
         (x >= 1 && x < 8 && y >= 17 && y < 24);
       if (inFinder) continue;
       if (hashAt(y * cells + x) % 3 === 0) {
-        ctx.fillRect(x * cell, y * cell, cell, cell);
+        fillCellRect(x, y, 1, 1);
       }
     }
   }
@@ -249,8 +881,54 @@ function render() {
   renderMembers();
   renderEditor();
   renderAvatars();
+  renderReservationMemberOptions();
+  if (pointsScreen && !pointsScreen.hidden) {
+    renderPoints();
+  }
+  if (reservationScreen && !reservationScreen.hidden) {
+    renderReservationSlots();
+  }
 }
 
+memberMenuButton.addEventListener("click", () => {
+  if (!pointsScreen.hidden) closePointsScreen();
+  if (!reservationScreen.hidden) closeReservationScreen();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+pointsMenuButton.addEventListener("click", openPointsScreen);
+pointsCloseButton.addEventListener("click", closePointsScreen);
+reservationMenuButton.addEventListener("click", openReservationScreen);
+reservationCloseButton.addEventListener("click", closeReservationScreen);
+reservationDateInput.addEventListener("change", () => {
+  selectedReservationHour = null;
+  renderReservationSlots();
+});
+reservationStoreInput.addEventListener("change", () => {
+  selectedReservationHour = null;
+  renderReservationSlots();
+});
+slotGrid.addEventListener("click", (event) => {
+  const button = event.target.closest(".slot-button");
+  if (!button || button.disabled) return;
+  selectedReservationHour = Number(button.dataset.hour);
+  renderReservationSlots();
+});
+confirmReservationButton.addEventListener("click", confirmReservation);
+sendLineMessageButton.addEventListener("click", sendReservationLineMessage);
+staffScanButton.addEventListener("click", startStaffScanDemo);
+staffCloseButton.addEventListener("click", closeStaffSheet);
+staffSheet.addEventListener("click", (event) => {
+  if (event.target === staffSheet) closeStaffSheet();
+});
+document.querySelectorAll(".staff-delta-button").forEach((button) => {
+  button.addEventListener("click", () => setSelectedPointDelta(Number(button.dataset.delta)));
+});
+staffDeltaInput.addEventListener("input", () => {
+  const value = Number.parseInt(staffDeltaInput.value, 10);
+  if (Number.isFinite(value)) selectedPointDelta = value;
+  renderStaffPanel();
+});
+applyPointsButton.addEventListener("click", applyPointAdjustment);
 avatarOpenButton.addEventListener("click", openAvatarSheet);
 avatarCloseButton.addEventListener("click", closeAvatarSheet);
 avatarSheet.addEventListener("click", (event) => {
@@ -258,12 +936,27 @@ avatarSheet.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !avatarSheet.hidden) closeAvatarSheet();
+  if (event.key !== "Escape") return;
+  if (!staffSheet.hidden) {
+    closeStaffSheet();
+  } else if (!avatarSheet.hidden) {
+    closeAvatarSheet();
+  } else if (!reservationScreen.hidden) {
+    closeReservationScreen();
+  } else if (!pointsScreen.hidden) {
+    closePointsScreen();
+  }
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.key === reservationStorageKey && !reservationScreen.hidden) {
+    renderReservationSlots();
+  }
 });
 
 nameInput.addEventListener("input", (event) => updateSelected("name", event.target.value));
 birthdayInput.addEventListener("input", (event) => updateSelected("birthday", event.target.value));
-roleInput.addEventListener("change", (event) => updateSelected("role", event.target.value));
+genderInput.addEventListener("change", (event) => updateSelected("gender", event.target.value));
 schoolInput.addEventListener("input", (event) => updateSelected("school", event.target.value));
 
 photoInput.addEventListener("change", (event) => {
@@ -286,6 +979,7 @@ addMemberButton.addEventListener("click", () => {
     name: `山田 追加${nextIndex}`,
     birthday: "2017-04-02",
     role: "生徒",
+    gender: "未回答",
     school: "学校名を入力",
     avatar: `./assets/avatars/${avatarFiles[(nextIndex + 4) % avatarFiles.length]}`,
   };
@@ -294,4 +988,14 @@ addMemberButton.addEventListener("click", () => {
   render();
 });
 
+function openInitialScreenFromUrl() {
+  const screen = new URLSearchParams(window.location.search).get("screen");
+  if (screen === "points") {
+    openPointsScreen();
+  } else if (["reservation", "measurements", "measurement-reservation"].includes(screen)) {
+    openReservationScreen();
+  }
+}
+
 render();
+openInitialScreenFromUrl();

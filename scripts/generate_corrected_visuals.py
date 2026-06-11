@@ -236,7 +236,7 @@ def slide_menu_flow():
     panels = [
         ("会員情報", "親御さんとお子さま情報を確認", GREEN, "member"),
         ("ポイント", "残高・履歴・会員QRを表示", YELLOW, "point"),
-        ("採寸予約", "既存予約サイトへ移動", BLUE, "calendar"),
+        ("採寸予約", "空き時間を1時間単位で選択", BLUE, "calendar"),
         ("採寸記録", "お子さま別に記録を確認", TEAL, "measure"),
         ("ECサイト", "勇吉屋ネットへアクセス", CORAL, "cart"),
         ("クーポン", "学校・学年に合わせて配信", ORANGE, "coupon"),
@@ -355,7 +355,7 @@ def slide_measurement():
     shadow_card(img, (95, 230, 330, 430), 30, PAPER, BLUE)
     d.text((145, 275), "採寸予約", font=font(38, 7), fill=BLUE)
     icon(d, "calendar", (170, 345, 120, 120), BLUE, BLUE)
-    d.text((145, 500), "既存予約サイトへ移動", font=font(22, 6), fill=INK)
+    d.text((145, 500), "空き時間から選択", font=font(22, 6), fill=INK)
     d.rounded_rectangle((145, 570, 375, 630), 20, fill=BLUE)
     center_text(d, (145, 570, 230, 60), "予約する", font(25, 7), PAPER)
     shadow_card(img, (520, 195, 405, 580), 44, PAPER, "#cfeee0")
@@ -480,7 +480,7 @@ def generate_rich_menu():
     items = [
         ("会員情報", "会員証・お子さま情報", GREEN, "member"),
         ("ポイント", "残高・履歴・QR表示", YELLOW, "point"),
-        ("採寸予約", "既存予約サイトへ", BLUE, "calendar"),
+        ("採寸予約", "1時間枠で予約", BLUE, "calendar"),
         ("採寸記録", "お子さま別に確認", TEAL, "measure"),
         ("ECサイト", "勇吉屋ネットへ", CORAL, "cart"),
         ("クーポン", "特典・お知らせ", ORANGE, "coupon"),

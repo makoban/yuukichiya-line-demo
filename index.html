@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>勇吉屋 公式LINE会員情報デモ</title>
     <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="./config.js"></script>
@@ -17,9 +18,24 @@
         </a>
         <div>
           <p class="header-kicker" id="liffStatus">勇吉屋 公式LINE</p>
-          <h1>会員情報</h1>
+          <h1>会員サービス</h1>
         </div>
       </header>
+
+      <nav class="demo-menu" aria-label="LINEリッチメニュー">
+        <button class="demo-menu-button is-active" id="memberMenuButton" type="button">
+          <span>会員照会</span>
+        </button>
+        <button class="demo-menu-button is-point" id="pointsMenuButton" type="button">
+          <span>ポイント</span>
+        </button>
+        <button class="demo-menu-button" id="reservationMenuButton" type="button">
+          <span>採寸予約</span>
+        </button>
+        <a class="demo-menu-button" href="https://yuukichiya.base.shop/" target="_blank" rel="noreferrer">
+          <span>ECサイト</span>
+        </a>
+      </nav>
 
       <section class="representative-card" aria-label="代表者枠">
         <div class="representative-head">
@@ -29,8 +45,10 @@
 
         <div class="representative-main">
           <button class="avatar-button" id="avatarOpenButton" type="button" aria-label="アイコンを変更">
-            <img id="representativeAvatar" src="./assets/avatars/avatar-04-guardian.png" alt="アイコン" />
-            <span>変更</span>
+            <span class="avatar-image-frame">
+              <img id="representativeAvatar" src="./assets/avatars/avatar-04-guardian.png" alt="アイコン" />
+            </span>
+            <span class="avatar-change-label">変更</span>
           </button>
 
           <div class="qr-panel" aria-label="会員QR">
@@ -74,18 +92,171 @@
             <input id="birthdayInput" type="date" />
           </label>
           <label>
-            <span>区分</span>
-            <select id="roleInput">
-              <option value="代表者">代表者</option>
-              <option value="親御さん">親御さん</option>
-              <option value="生徒">生徒</option>
-              <option value="その他ご家族">その他ご家族</option>
+            <span>性別</span>
+            <select id="genderInput">
+              <option value="女性">女性</option>
+              <option value="男性">男性</option>
+              <option value="未回答">未回答</option>
             </select>
           </label>
           <label>
             <span>学校名</span>
             <input id="schoolInput" type="text" />
           </label>
+        </div>
+      </section>
+
+      <section class="points-screen" id="pointsScreen" aria-label="ポイントカード" hidden>
+        <div class="points-phone">
+          <header class="points-topbar">
+            <button class="points-back" id="pointsCloseButton" type="button" aria-label="会員サービスに戻る">
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div>
+              <p>勇吉屋ポイント</p>
+              <h2>会員識別QR</h2>
+            </div>
+          </header>
+
+          <section class="points-hero" aria-label="現在ポイント">
+            <span class="points-label">現在のポイント</span>
+            <strong id="pointBalanceText">1,250pt</strong>
+            <span class="points-member" id="pointMemberText">山田 由美 様 / YK-001234</span>
+          </section>
+
+          <section class="customer-qr-card" aria-label="会員識別QR">
+            <div class="qr-title-row">
+              <div>
+                <p>店頭で提示</p>
+                <h3>このQRを店舗側が読み取ります</h3>
+              </div>
+              <span class="secure-badge">短時間有効</span>
+            </div>
+            <div class="large-qr-frame" id="largeQrFrame">
+              <canvas id="pointsQrCanvas" width="244" height="244"></canvas>
+              <span class="scan-beam" aria-hidden="true"></span>
+            </div>
+            <button class="scan-demo-button" id="staffScanButton" type="button">店舗側で読み取りデモ</button>
+          </section>
+
+          <section class="point-history-card" aria-label="ポイント履歴">
+            <div class="section-title-row">
+              <h3>ポイント履歴</h3>
+              <span id="latestSyncText">リアルタイム反映</span>
+            </div>
+            <div class="point-history-list" id="pointHistoryList"></div>
+          </section>
+        </div>
+
+        <div class="point-effect" id="pointEffect" hidden>
+          <strong id="pointEffectText">+100pt</strong>
+          <span>即時反映</span>
+        </div>
+      </section>
+
+      <section class="reservation-screen" id="reservationScreen" aria-label="採寸予約" hidden>
+        <div class="reservation-phone">
+          <header class="points-topbar">
+            <button class="points-back" id="reservationCloseButton" type="button" aria-label="会員サービスに戻る">
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div>
+              <p>勇吉屋 採寸予約</p>
+              <h2>空き時間を選択</h2>
+            </div>
+          </header>
+
+          <section class="reservation-card" aria-label="予約内容">
+            <div class="reservation-form-grid">
+              <label>
+                <span>対象のお子さま</span>
+                <select id="reservationMemberInput"></select>
+              </label>
+              <label>
+                <span>店舗</span>
+                <select id="reservationStoreInput"></select>
+              </label>
+              <label>
+                <span>予約日</span>
+                <input id="reservationDateInput" type="date" />
+              </label>
+              <label>
+                <span>電話番号</span>
+                <input id="reservationPhoneInput" type="tel" inputmode="tel" placeholder="090-0000-0000" required />
+              </label>
+            </div>
+
+            <div class="slot-head">
+              <h3>1時間枠</h3>
+              <span id="slotSummaryText">空き枠を確認中</span>
+            </div>
+            <div class="slot-grid" id="slotGrid"></div>
+
+            <label class="reservation-note-label">
+              <span>連絡メモ</span>
+              <textarea id="reservationNoteInput" rows="3" placeholder="制服の種類、来店人数など"></textarea>
+            </label>
+
+            <button class="confirm-reservation-button" id="confirmReservationButton" type="button" disabled>
+              この時間で予約する
+            </button>
+          </section>
+
+          <section class="reservation-card reservation-confirmation" id="reservationConfirmation" aria-label="予約確定" hidden>
+            <div class="confirmation-mark" aria-hidden="true">✓</div>
+            <div>
+              <p class="confirmation-kicker">予約確定しました</p>
+              <h3 id="reservationConfirmedTime">日時を表示</h3>
+            </div>
+            <dl class="confirmation-details" id="reservationConfirmationDetails"></dl>
+            <div class="line-send-status" id="lineSendStatus">LINEメッセージを準備中</div>
+            <button class="send-line-button" id="sendLineMessageButton" type="button">
+              LINEメッセージを再送
+            </button>
+          </section>
+        </div>
+      </section>
+
+      <section class="staff-sheet" id="staffSheet" aria-label="店舗側ポイント処理" hidden>
+        <div class="staff-sheet-panel">
+          <div class="staff-panel-head">
+            <div>
+              <p>店舗側ポイント処理</p>
+              <h2 id="staffMemberName">山田 由美 様</h2>
+            </div>
+            <button class="sheet-close" id="staffCloseButton" type="button">閉じる</button>
+          </div>
+
+          <div class="staff-current">
+            <span>現在ポイント</span>
+            <strong id="staffCurrentPoints">1,250pt</strong>
+          </div>
+
+          <div class="staff-actions" aria-label="増減ポイント">
+            <button class="staff-delta-button is-plus is-active" type="button" data-delta="100">+100</button>
+            <button class="staff-delta-button is-plus" type="button" data-delta="300">+300</button>
+            <button class="staff-delta-button is-minus" type="button" data-delta="-50">-50</button>
+          </div>
+
+          <div class="staff-form-grid">
+            <label>
+              <span>増減ポイント</span>
+              <input id="staffDeltaInput" type="number" inputmode="numeric" value="100" />
+            </label>
+            <label>
+              <span>理由</span>
+              <select id="staffReasonInput">
+                <option value="学生服購入">学生服購入</option>
+                <option value="紙カードから移行">紙カードから移行</option>
+                <option value="補正サービス利用">補正サービス利用</option>
+                <option value="ポイント訂正">ポイント訂正</option>
+              </select>
+            </label>
+          </div>
+
+          <button class="apply-points-button" id="applyPointsButton" type="button">
+            顧客ポイントへ反映
+          </button>
         </div>
       </section>
 
