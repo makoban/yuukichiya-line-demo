@@ -32,6 +32,7 @@ const initialMembers = [
     role: "代表者",
     gender: "女性",
     school: "",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-04-guardian.png",
   },
@@ -42,6 +43,7 @@ const initialMembers = [
     role: "生徒",
     gender: "女性",
     school: "豊田市立さくら中学校",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-01-student-girl.png",
   },
@@ -52,6 +54,7 @@ const initialMembers = [
     role: "生徒",
     gender: "男性",
     school: "豊田市立みどり小学校",
+    phone: "090-1234-5678",
     address: "愛知県豊田市桜町1-2-3",
     avatar: "./assets/avatars/avatar-02-student-boy.png",
   },
@@ -87,6 +90,8 @@ const initialPointTransactions = [
   },
 ];
 let pointTransactions = clonePointTransactions(initialPointTransactions);
+const purchaseHistoryLimit = 100;
+let purchaseHistoryRecords = createDemoPurchaseHistory().slice(0, purchaseHistoryLimit);
 
 const initialMeasurementRecords = [
   {
@@ -173,7 +178,10 @@ const nameInput = document.getElementById("nameInput");
 const birthdayInput = document.getElementById("birthdayInput");
 const genderInput = document.getElementById("genderInput");
 const schoolInput = document.getElementById("schoolInput");
+const phoneInput = document.getElementById("phoneInput");
 const addressInput = document.getElementById("addressInput");
+const purchaseHistoryList = document.getElementById("purchaseHistoryList");
+const purchaseHistoryCount = document.getElementById("purchaseHistoryCount");
 const photoInput = document.getElementById("photoInput");
 const addMemberButton = document.getElementById("addMemberButton");
 const liffStatus = document.getElementById("liffStatus");
@@ -254,6 +262,88 @@ function cloneMembers(list) {
 
 function clonePointTransactions(list) {
   return list.map((transaction) => ({ ...transaction }));
+}
+
+function createDemoPurchaseHistory() {
+  const seedRecords = [
+    {
+      id: "ph-001",
+      purchasedAt: "2026-06-08T14:20:00+09:00",
+      item: "中学夏制服 上下セット",
+      amount: 45000,
+      memberId: "m2",
+      store: "本店",
+      channel: "店頭",
+      pointStatus: "granted",
+      pointDelta: 450,
+    },
+    {
+      id: "ph-002",
+      purchasedAt: "2026-06-07T11:05:00+09:00",
+      item: "体操服・ハーフパンツ",
+      amount: 8800,
+      memberId: "m3",
+      store: "高橋店",
+      channel: "店頭",
+      pointStatus: "granted",
+      pointDelta: 88,
+    },
+    {
+      id: "ph-003",
+      purchasedAt: "2026-05-28T16:05:00+09:00",
+      item: "袖丈補正サービス",
+      amount: 2200,
+      memberId: "m1",
+      store: "本店",
+      channel: "店頭",
+      pointStatus: "none",
+      pointDelta: 0,
+    },
+    {
+      id: "ph-004",
+      purchasedAt: "2026-05-18T13:40:00+09:00",
+      item: "スクールシャツ 2枚",
+      amount: 6400,
+      memberId: "m2",
+      store: "EC",
+      channel: "EC",
+      pointStatus: "pending",
+      pointDelta: 64,
+    },
+  ];
+
+  const templates = [
+    { item: "スクールシャツ", amount: 3200, memberId: "m2", store: "本店", channel: "店頭" },
+    { item: "通学ソックス", amount: 900, memberId: "m3", store: "高橋店", channel: "店頭" },
+    { item: "体操服 半袖", amount: 2800, memberId: "m3", store: "本店", channel: "店頭" },
+    { item: "セーター", amount: 6800, memberId: "m2", store: "EC", channel: "EC" },
+    { item: "通学ベルト", amount: 1800, memberId: "m3", store: "高橋店", channel: "店頭" },
+    { item: "裾上げ補正", amount: 1100, memberId: "m1", store: "本店", channel: "店頭", pointStatus: "none" },
+  ];
+
+  const generatedRecords = Array.from({ length: 104 }, (_, index) => {
+    const template = templates[index % templates.length];
+    const month = 5 - Math.floor(index / 24);
+    const day = 28 - (index % 24);
+    const hour = 10 + (index % 8);
+    const minute = (index * 7) % 60;
+    const amount = template.amount + (index % 3) * 100;
+    const pointStatus = template.pointStatus || (index % 17 === 0 ? "pending" : "granted");
+    const pointDelta = pointStatus === "none" ? 0 : Math.floor(amount / 100);
+    return {
+      id: `ph-demo-${String(index + 1).padStart(3, "0")}`,
+      purchasedAt: `2026-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00+09:00`,
+      item: template.item,
+      amount,
+      memberId: template.memberId,
+      store: template.store,
+      channel: template.channel,
+      pointStatus,
+      pointDelta,
+    };
+  });
+
+  return [...seedRecords, ...generatedRecords].sort((a, b) => new Date(b.purchasedAt) - new Date(a.purchasedAt));
 }
 
 function cloneMeasurementRecords(list) {
@@ -378,6 +468,7 @@ function renderEditor() {
   birthdayInput.value = member.birthday;
   genderInput.value = member.gender || "未回答";
   schoolInput.value = member.school;
+  phoneInput.value = member.phone || "";
   addressInput.value = member.address || "";
 }
 
@@ -509,6 +600,68 @@ function renderPointHistory() {
           </span>
           <strong class="point-delta${isMinus ? " is-minus" : ""}">${deltaText}</strong>
         </div>
+      `;
+    })
+    .join("");
+}
+
+function formatPurchaseDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "日時未登録";
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function formatCurrency(value) {
+  const amount = Number(value) || 0;
+  const sign = amount < 0 ? "-" : "";
+  return `${sign}¥${Math.abs(amount).toLocaleString("ja-JP")}`;
+}
+
+function purchaseMemberName(memberId) {
+  return members.find((member) => member.id === memberId)?.name || "登録メンバー";
+}
+
+function purchasePointStatus(record) {
+  if (record.pointStatus === "pending") {
+    return { label: "付与予定", className: "is-pending", pointText: `+${record.pointDelta}pt` };
+  }
+  if (record.pointStatus === "none" || record.pointDelta <= 0) {
+    return { label: "ポイント対象外", className: "is-none", pointText: "0pt" };
+  }
+  return { label: "ポイント付与済", className: "is-granted", pointText: `+${record.pointDelta}pt` };
+}
+
+function renderPurchaseHistory() {
+  const records = purchaseHistoryRecords.slice(0, purchaseHistoryLimit);
+  purchaseHistoryCount.textContent = `${records.length}件 / 最大${purchaseHistoryLimit}件`;
+  purchaseHistoryList.innerHTML = records
+    .map((record) => {
+      const status = purchasePointStatus(record);
+      return `
+        <article class="purchase-history-item">
+          <div class="purchase-history-head">
+            <div>
+              <time datetime="${escapeHtml(record.purchasedAt)}">${escapeHtml(formatPurchaseDate(record.purchasedAt))}</time>
+              <strong>${escapeHtml(record.item)}</strong>
+            </div>
+            <strong class="purchase-amount">${escapeHtml(formatCurrency(record.amount))}</strong>
+          </div>
+          <div class="purchase-history-badges">
+            <span class="purchase-badge is-channel">${escapeHtml(record.channel)}</span>
+            <span class="purchase-badge ${status.className}">${escapeHtml(status.label)}</span>
+            <span class="purchase-point-chip${record.pointDelta > 0 ? " is-plus" : ""}">${escapeHtml(status.pointText)}</span>
+          </div>
+          <dl class="purchase-history-meta">
+            <div>
+              <dt>対象</dt>
+              <dd>${escapeHtml(purchaseMemberName(record.memberId))}</dd>
+            </div>
+            <div>
+              <dt>店舗</dt>
+              <dd>${escapeHtml(record.store)}</dd>
+            </div>
+          </dl>
+        </article>
       `;
     })
     .join("");
@@ -1730,6 +1883,7 @@ function render() {
   renderRepresentative();
   renderMembers();
   renderEditor();
+  renderPurchaseHistory();
   renderAvatars();
   renderReservationMemberOptions();
   renderMeasurementRecords();
@@ -1815,6 +1969,7 @@ nameInput.addEventListener("input", (event) => updateSelected("name", event.targ
 birthdayInput.addEventListener("input", (event) => updateSelected("birthday", event.target.value));
 genderInput.addEventListener("change", (event) => updateSelected("gender", event.target.value));
 schoolInput.addEventListener("input", (event) => updateSelected("school", event.target.value));
+phoneInput.addEventListener("input", (event) => updateSelected("phone", event.target.value));
 addressInput.addEventListener("input", (event) => updateSelected("address", event.target.value));
 
 photoInput.addEventListener("change", (event) => {
@@ -1839,6 +1994,7 @@ addMemberButton.addEventListener("click", () => {
     role: "生徒",
     gender: "未回答",
     school: "学校名を入力",
+    phone: members[0].phone || "",
     address: members[0].address || "",
     avatar: `./assets/avatars/${avatarFiles[(nextIndex + 4) % avatarFiles.length]}`,
   };

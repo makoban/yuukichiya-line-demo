@@ -139,7 +139,8 @@ h3 {
 
 .representative-card,
 .member-section,
-.edit-panel {
+.edit-panel,
+.purchase-history-section {
   margin-top: 12px;
   padding: 14px;
   border: 1px solid rgba(2, 130, 54, 0.1);
@@ -403,6 +404,148 @@ h3 {
   font-size: 12px;
   font-weight: 800;
   line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.purchase-history-count {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: var(--green-soft);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.purchase-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.purchase-history-item {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #f8fbff;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+.purchase-history-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.purchase-history-head time,
+.purchase-history-head strong {
+  display: block;
+  min-width: 0;
+}
+
+.purchase-history-head time {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.purchase-history-head strong {
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.purchase-amount {
+  margin-top: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.purchase-history-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.purchase-badge,
+.purchase-point-chip {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.purchase-badge.is-channel {
+  color: #0b4d88;
+  background: #e8f4ff;
+}
+
+.purchase-badge.is-granted {
+  color: var(--green-dark);
+  background: #e6f8ee;
+}
+
+.purchase-badge.is-pending {
+  color: #9a5d00;
+  background: #fff2bd;
+}
+
+.purchase-badge.is-none {
+  color: #5b6574;
+  background: #edf1f5;
+}
+
+.purchase-point-chip {
+  color: #5b6574;
+  background: white;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.1);
+}
+
+.purchase-point-chip.is-plus {
+  color: #0b8de3;
+}
+
+.purchase-history-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.purchase-history-meta div {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: white;
+}
+
+.purchase-history-meta dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.purchase-history-meta dd {
+  min-width: 0;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 900;
   overflow-wrap: anywhere;
 }
 
