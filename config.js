@@ -12,4 +12,5 @@ window.YUUKICHIYA_LINE_CONFIG = {
   measurementRecordsPageUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records",
   ecUrl: "https://makoban.github.io/yuukichiya-base-preview/?v=20260611-2",
   couponPageUrl: "https://makoban.github.io/yuukichiya-line-demo/?screen=coupon",
+  demoApiBaseUrl: "https://yuukichiya-admin-dashboard.onrender.com/demo-api",
 };

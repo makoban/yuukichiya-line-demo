@@ -212,6 +212,14 @@ const reservationMenuButton = document.getElementById("reservationMenuButton");
 const reservationCloseButton = document.getElementById("reservationCloseButton");
 const couponScreen = document.getElementById("couponScreen");
 const couponCloseButton = document.getElementById("couponCloseButton");
+const couponScreenTitle = document.getElementById("couponScreenTitle");
+const couponBenefitLabel = document.getElementById("couponBenefitLabel");
+const couponKicker = document.getElementById("couponKicker");
+const couponName = document.getElementById("couponName");
+const couponCode = document.getElementById("couponCode");
+const couponQrImage = document.getElementById("couponQrImage");
+const couponValidTo = document.getElementById("couponValidTo");
+const couponTarget = document.getElementById("couponTarget");
 const refreshReservationsButton = document.getElementById("refreshReservationsButton");
 const reservationStatusList = document.getElementById("reservationStatusList");
 const measurementLatestList = document.getElementById("measurementLatestList");
@@ -259,6 +267,7 @@ let myReservationsLoading = false;
 let myReservationsMessage = "";
 let cancellingReservationId = "";
 let selectedMeasurementFilterId = "all";
+let dbCoupons = [];
 let isPageScrollLocked = false;
 let lockedPageScrollY = 0;
 let previousBodyScrollStyles = null;
@@ -365,6 +374,102 @@ function cloneMeasurementRecords(list) {
     ...record,
     values: Array.isArray(record.values) ? record.values.map((pair) => [...pair]) : [],
   }));
+}
+
+function demoApiBaseUrl() {
+  const base = String(lineConfig.demoApiBaseUrl || "").trim();
+  return base && base.startsWith("https://") ? base.replace(/\/$/, "") : "";
+}
+
+async function loadDemoDataFromDatabase() {
+  const base = demoApiBaseUrl();
+  if (!base) return;
+  try {
+    const url = new URL(`${base}/demo-data`);
+    url.searchParams.set("memberNumber", memberNumber);
+    const response = await fetch(url.href, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Demo API ${response.status}`);
+    const data = await response.json();
+    applyDemoProfile(data.profile);
+    applyDemoCoupons(data.coupons);
+    render();
+  } catch (error) {
+    console.warn("Demo API data is unavailable", error);
+  }
+}
+
+function applyDemoProfile(profile) {
+  if (!profile || !Array.isArray(profile.members) || !profile.members.length) return;
+  const previousMembers = cloneMembers(members);
+  const fallbackAvatars = [
+    "./assets/avatars/avatar-04-guardian.png",
+    "./assets/avatars/avatar-01-student-girl.png",
+    "./assets/avatars/avatar-02-student-boy.png",
+    "./assets/avatars/avatar-03-student-senior.png",
+  ];
+  const localIdByNumber = new Map();
+  members = profile.members.map((member, index) => {
+    const previous = previousMembers[index] || {};
+    const id = index < 3 ? `m${index + 1}` : member.member_number || `m${index + 1}`;
+    localIdByNumber.set(member.member_number, id);
+    return {
+      id,
+      dbMemberNumber: member.member_number,
+      name: member.member_name || previous.name || "登録メンバー",
+      birthday: member.birthday || previous.birthday || "",
+      role: member.member_type === "guardian" ? "代表者" : "生徒",
+      gender: previous.gender || "未回答",
+      school: member.school || "",
+      address: member.address || previous.address || "",
+      avatar: previous.avatar || fallbackAvatars[index] || fallbackAvatars[0],
+    };
+  });
+  if (!members.some((member) => member.id === selectedId)) selectedId = members[0].id;
+
+  const transactions = Array.isArray(profile.pointTransactions)
+    ? profile.pointTransactions.map((transaction) => ({
+        id: transaction.id,
+        delta: Number(transaction.delta) || 0,
+        reason: transaction.reason || "ポイント調整",
+        staff: transaction.staff_name || "本店",
+        createdAt: transaction.created_at,
+        balanceAfter: Number(transaction.balance_after) || 0,
+      }))
+    : clonePointTransactions(initialPointTransactions);
+  const nextPointState = {
+    balance: Number(profile.pointBalance) || initialPointBalance,
+    transactions,
+  };
+  try {
+    window.localStorage.setItem(pointStorageKey, JSON.stringify(nextPointState));
+  } catch (error) {
+    console.warn("Point DB sync storage failed", error);
+  }
+  syncPointState(nextPointState, { silent: true });
+
+  if (Array.isArray(profile.purchaseHistory) && profile.purchaseHistory.length) {
+    purchaseHistoryRecords = profile.purchaseHistory
+      .map((record) => {
+        const amount = Number(record.amount_yen) || 0;
+        return {
+          id: record.id,
+          purchasedAt: record.purchased_at,
+          item: record.item_name || "購入品",
+          amount,
+          memberId: localIdByNumber.get(record.member_number) || record.member_number,
+          store: record.store || "本店",
+          channel: record.channel || "店頭",
+          pointStatus: record.item_kind === "補正" ? "none" : "granted",
+          pointDelta: record.item_kind === "補正" ? 0 : Math.floor(amount / 100),
+        };
+      })
+      .slice(0, purchaseHistoryLimit);
+  }
+}
+
+function applyDemoCoupons(coupons) {
+  dbCoupons = Array.isArray(coupons) ? coupons : [];
+  renderCoupon();
 }
 
 function memberKindLabel(member, index) {
@@ -623,6 +728,50 @@ function formatCurrency(value) {
   return `${sign}¥${Math.abs(amount).toLocaleString("ja-JP")}`;
 }
 
+function activeDisplayCoupon() {
+  return dbCoupons.find((coupon) => coupon.code === "LINE10-202607") || dbCoupons[0] || null;
+}
+
+function couponBenefitText(coupon) {
+  if (!coupon) return "10% OFF";
+  if (Number(coupon.discount_percent)) return `${Number(coupon.discount_percent)}% OFF`;
+  if (Number(coupon.point_bonus)) return `${Number(coupon.point_bonus).toLocaleString("ja-JP")}pt`;
+  if (Number(coupon.fixed_discount_yen)) return `${Number(coupon.fixed_discount_yen).toLocaleString("ja-JP")}円引き`;
+  return "特典";
+}
+
+function couponTargetText(coupon) {
+  if (!coupon) return "全商品";
+  const rules = coupon.target_rules || {};
+  if (rules.itemKeyword) return `${rules.itemKeyword}関連商品`;
+  if (rules.tag) return `${rules.tag}の会員`;
+  if (Number(coupon.min_purchase_yen)) return `${formatCurrency(coupon.min_purchase_yen)}以上`;
+  return "全商品";
+}
+
+function formatCouponDate(value) {
+  const date = new Date(`${value}T00:00:00`);
+  if (!Number.isFinite(date.getTime())) return "期限未設定";
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日まで`;
+}
+
+function renderCoupon() {
+  const coupon = activeDisplayCoupon();
+  if (!coupon) return;
+  couponScreenTitle.textContent = coupon.name;
+  couponBenefitLabel.textContent = couponBenefitText(coupon);
+  couponKicker.textContent = coupon.name;
+  couponName.textContent = couponBenefitText(coupon);
+  couponCode.textContent = coupon.code;
+  couponValidTo.textContent = formatCouponDate(coupon.valid_to);
+  couponTarget.textContent = couponTargetText(coupon);
+  const base = demoApiBaseUrl();
+  if (base && couponQrImage) {
+    couponQrImage.src = `${base}/coupons/${encodeURIComponent(coupon.code)}/qr.png`;
+    couponQrImage.alt = `クーポンQR ${coupon.code}`;
+  }
+}
+
 function purchaseMemberName(memberId) {
   return members.find((member) => member.id === memberId)?.name || "登録メンバー";
 }
@@ -763,6 +912,7 @@ function openCouponScreen() {
   if (measurementRecordsScreen && !measurementRecordsScreen.hidden) closeMeasurementRecordsScreen();
   if (memberServiceScreen) memberServiceScreen.hidden = true;
   if (lineTalkScreen) lineTalkScreen.hidden = true;
+  renderCoupon();
   couponScreen.hidden = false;
   document.body.classList.add("coupon-open");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2259,3 +2409,4 @@ function openInitialScreenFromUrl() {
 
 render();
 openInitialScreenFromUrl();
+loadDemoDataFromDatabase();
