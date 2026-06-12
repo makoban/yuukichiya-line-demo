@@ -389,6 +389,25 @@ h3 {
 .member-avatar-frame {
   width: 54px;
   height: 54px;
+  position: relative;
+  box-shadow: 0 6px 14px rgba(12, 34, 58, 0.1);
+}
+
+.member-avatar-edit-label {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  transform: translateX(-50%);
+  min-width: 32px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: white;
+  background: rgba(6, 169, 68, 0.92);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
 }
 
 .member-card-main {

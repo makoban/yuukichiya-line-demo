@@ -59,6 +59,7 @@ const initialMembers = [
 
 let members = cloneMembers(initialMembers);
 let selectedId = members[0].id;
+let avatarTargetId = selectedId;
 let pointBalance = initialPointBalance;
 const initialPointTransactions = [
   {
@@ -177,6 +178,7 @@ const avatarGrid = document.getElementById("avatarGrid");
 const avatarSheet = document.getElementById("avatarSheet");
 const avatarOpenButton = document.getElementById("avatarOpenButton");
 const avatarCloseButton = document.getElementById("avatarCloseButton");
+const avatarSheetTitle = document.getElementById("avatarSheetTitle");
 const representativeAvatar = document.getElementById("representativeAvatar");
 const representativeName = document.getElementById("representativeName");
 const representativeBirthday = document.getElementById("representativeBirthday");
@@ -207,6 +209,7 @@ const pointEffect = document.getElementById("pointEffect");
 const pointEffectText = document.getElementById("pointEffectText");
 const latestSyncText = document.getElementById("latestSyncText");
 const lineConfig = window.YUUKICHIYA_LINE_CONFIG || {};
+const isLocalPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 const reservationScreen = document.getElementById("reservationScreen");
 const reservationMenuButton = document.getElementById("reservationMenuButton");
 const reservationCloseButton = document.getElementById("reservationCloseButton");
@@ -245,7 +248,12 @@ const sendLineMessageButton = document.getElementById("sendLineMessageButton");
 const pointStorageKey = "yuukichiya.pointState.v1";
 const pointChannel = "BroadcastChannel" in window ? new BroadcastChannel("yuukichiya.points.demo") : null;
 const reservationStorageKey = "yuukichiya.measurementReservations.v1";
-const reservationSlotHours = Array.from({ length: 8 }, (_, index) => index + 10);
+const reservationStartHour = Number(lineConfig.reservationStartHour) || 10;
+const reservationEndHour = Number(lineConfig.reservationEndHour) || 18;
+const reservationSlotHours = Array.from(
+  { length: Math.max(1, reservationEndHour - reservationStartHour) },
+  (_, index) => index + reservationStartHour,
+);
 const reservationStores =
   Array.isArray(lineConfig.reservationStores) && lineConfig.reservationStores.length > 0
     ? lineConfig.reservationStores
@@ -279,6 +287,12 @@ liffReadyPromise = initLiff();
 
 function selectedMember() {
   return members.find((member) => member.id === selectedId) || members[0];
+}
+
+function avatarTargetMember() {
+  const member = members.find((item) => item.id === avatarTargetId) || selectedMember();
+  avatarTargetId = member.id;
+  return member;
 }
 
 function cloneMembers(list) {
@@ -427,6 +441,7 @@ function applyDemoProfile(profile) {
     };
   });
   if (!members.some((member) => member.id === selectedId)) selectedId = members[0].id;
+  if (!members.some((member) => member.id === avatarTargetId)) avatarTargetId = selectedId;
 
   const nextPointState = pointStateFromRemote(profile.pointBalance, profile.pointTransactions);
   latestRemotePointSignature = pointStateSignature(nextPointState);
@@ -504,6 +519,11 @@ function renderRepresentative() {
 }
 
 async function initLiff() {
+  if (isLocalPreview) {
+    liffStatus.textContent = "勇吉屋 公式LINE";
+    return false;
+  }
+
   if (!lineConfig.liffId || !window.liff) {
     liffStatus.textContent = "勇吉屋 公式LINE";
     return false;
@@ -542,6 +562,7 @@ function renderMembers() {
         <button class="member-card${active}${representative}" type="button" data-id="${member.id}">
           <span class="member-avatar-frame">
             <img src="${member.avatar}" alt="${member.name}のアイコン" />
+            <span class="member-avatar-edit-label">変更</span>
           </span>
           <span class="member-card-main">
             <strong>${member.name}</strong>
@@ -553,8 +574,13 @@ function renderMembers() {
     .join("");
 
   document.querySelectorAll(".member-card").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
       selectedId = button.dataset.id;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest(".member-avatar-frame")) {
+        openAvatarSheet(selectedId);
+        return;
+      }
       render();
     });
   });
@@ -570,13 +596,15 @@ function renderEditor() {
 }
 
 function renderAvatars() {
-  const current = members[0].avatar;
+  const member = avatarTargetMember();
+  const current = member.avatar;
+  avatarSheetTitle.textContent = `${member.name}のアイコン変更`;
   avatarGrid.innerHTML = avatarFiles
     .map((file) => {
       const src = `./assets/avatars/${file}`;
       const active = current.endsWith(file) ? " is-active" : "";
       return `
-        <button class="avatar-option${active}" type="button" data-src="${src}" aria-label="アイコンを選択">
+        <button class="avatar-option${active}" type="button" data-src="${src}" aria-label="${member.name}のアイコンを選択">
           <span class="avatar-option-frame">
             <img src="${src}" alt="" />
           </span>
@@ -587,8 +615,9 @@ function renderAvatars() {
 
   document.querySelectorAll(".avatar-option").forEach((button) => {
     button.addEventListener("click", () => {
-      members[0].avatar = button.dataset.src;
-      selectedId = members[0].id;
+      member.avatar = button.dataset.src;
+      selectedId = member.id;
+      avatarTargetId = member.id;
       render();
       closeAvatarSheet();
     });
@@ -1293,7 +1322,7 @@ function isPastReservationSlot(dateValue, hour) {
 }
 
 function reservationApiEnabled() {
-  return typeof lineConfig.reservationApiUrl === "string" && lineConfig.reservationApiUrl.startsWith("https://");
+  return !isLocalPreview && typeof lineConfig.reservationApiUrl === "string" && lineConfig.reservationApiUrl.startsWith("https://");
 }
 
 function isReservationRoute() {
@@ -2102,6 +2131,11 @@ async function sendReservationLineMessage() {
     await liffReadyPromise;
   }
 
+  if (isLocalPreview) {
+    setLineSendStatus("ローカル確認中です。本番LIFFまたは予約API接続後にLINEへ送信します。", "warning");
+    return;
+  }
+
   const hasLiff = Boolean(window.liff && lineConfig.liffId);
 
   if (!hasLiff) {
@@ -2258,8 +2292,10 @@ function unlockPageScroll() {
   window.scrollTo(0, restoreY);
 }
 
-function openAvatarSheet() {
-  selectedId = members[0].id;
+function openAvatarSheet(targetId = selectedId) {
+  const fallbackId = members[0]?.id || selectedId;
+  avatarTargetId = members.some((member) => member.id === targetId) ? targetId : fallbackId;
+  selectedId = avatarTargetId;
   render();
   avatarSheet.hidden = false;
   document.body.classList.add("sheet-open");
@@ -2346,7 +2382,7 @@ slotGrid.addEventListener("click", (event) => {
 });
 confirmReservationButton.addEventListener("click", confirmReservation);
 sendLineMessageButton.addEventListener("click", sendReservationLineMessage);
-avatarOpenButton.addEventListener("click", openAvatarSheet);
+avatarOpenButton.addEventListener("click", () => openAvatarSheet(members[0].id));
 avatarCloseButton.addEventListener("click", closeAvatarSheet);
 avatarSheet.addEventListener("click", (event) => {
   if (event.target === avatarSheet) closeAvatarSheet();
@@ -2400,8 +2436,10 @@ photoInput.addEventListener("change", (event) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    members[0].avatar = reader.result;
-    selectedId = members[0].id;
+    const member = avatarTargetMember();
+    member.avatar = reader.result;
+    selectedId = member.id;
+    avatarTargetId = member.id;
     render();
     closeAvatarSheet();
   };
