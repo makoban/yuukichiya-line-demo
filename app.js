@@ -268,6 +268,8 @@ let myReservationsMessage = "";
 let cancellingReservationId = "";
 let selectedMeasurementFilterId = "all";
 let dbCoupons = [];
+let pointSyncTimer = null;
+let latestRemotePointSignature = "";
 let isPageScrollLocked = false;
 let lockedPageScrollY = 0;
 let previousBodyScrollStyles = null;
@@ -426,25 +428,9 @@ function applyDemoProfile(profile) {
   });
   if (!members.some((member) => member.id === selectedId)) selectedId = members[0].id;
 
-  const transactions = Array.isArray(profile.pointTransactions)
-    ? profile.pointTransactions.map((transaction) => ({
-        id: transaction.id,
-        delta: Number(transaction.delta) || 0,
-        reason: transaction.reason || "ポイント調整",
-        staff: transaction.staff_name || "本店",
-        createdAt: transaction.created_at,
-        balanceAfter: Number(transaction.balance_after) || 0,
-      }))
-    : clonePointTransactions(initialPointTransactions);
-  const nextPointState = {
-    balance: Number(profile.pointBalance) || initialPointBalance,
-    transactions,
-  };
-  try {
-    window.localStorage.setItem(pointStorageKey, JSON.stringify(nextPointState));
-  } catch (error) {
-    console.warn("Point DB sync storage failed", error);
-  }
+  const nextPointState = pointStateFromRemote(profile.pointBalance, profile.pointTransactions);
+  latestRemotePointSignature = pointStateSignature(nextPointState);
+  persistPointState(nextPointState);
   syncPointState(nextPointState, { silent: true });
 
   if (Array.isArray(profile.purchaseHistory) && profile.purchaseHistory.length) {
@@ -647,6 +633,70 @@ function readPointState() {
     console.warn("Point storage is unavailable", error);
     return defaultPointState();
   }
+}
+
+function pointStateFromRemote(balance, transactions) {
+  const numericBalance = Number(balance);
+  return {
+    balance: Number.isFinite(numericBalance) ? Math.max(0, numericBalance) : initialPointBalance,
+    transactions: Array.isArray(transactions)
+      ? transactions.map((transaction) => ({
+          id: transaction.id,
+          delta: Number(transaction.delta) || 0,
+          reason: transaction.reason || "ポイント調整",
+          staff: transaction.staff_name || transaction.staff || "本店",
+          createdAt: transaction.created_at || transaction.createdAt,
+          balanceAfter: Number(transaction.balance_after ?? transaction.balanceAfter) || 0,
+        }))
+      : clonePointTransactions(initialPointTransactions),
+  };
+}
+
+function persistPointState(state) {
+  try {
+    window.localStorage.setItem(pointStorageKey, JSON.stringify(normalizePointState(state)));
+  } catch (error) {
+    console.warn("Point DB sync storage failed", error);
+  }
+}
+
+function pointStateSignature(state) {
+  const normalized = normalizePointState(state);
+  const transactions = normalized.transactions
+    .slice(0, 8)
+    .map((transaction) => [transaction.id, transaction.delta, transaction.balanceAfter, transaction.createdAt].join(":"))
+    .join("|");
+  return `${normalized.balance}|${transactions}`;
+}
+
+async function fetchRemotePointState(options = {}) {
+  const base = demoApiBaseUrl();
+  if (!base) return;
+  try {
+    const response = await fetch(`${base}/points/${encodeURIComponent(memberNumber)}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Point API ${response.status}`);
+    const data = await response.json();
+    const nextPointState = pointStateFromRemote(data.balance ?? data.member?.current_points, data.transactions);
+    const signature = pointStateSignature(nextPointState);
+    if (signature === latestRemotePointSignature) return;
+    latestRemotePointSignature = signature;
+    persistPointState(nextPointState);
+    syncPointState(nextPointState, options);
+  } catch (error) {
+    console.warn("Remote point sync failed", error);
+  }
+}
+
+function startPointSync() {
+  stopPointSync();
+  fetchRemotePointState();
+  pointSyncTimer = window.setInterval(fetchRemotePointState, 2000);
+}
+
+function stopPointSync() {
+  if (!pointSyncTimer) return;
+  window.clearInterval(pointSyncTimer);
+  pointSyncTimer = null;
 }
 
 function syncPointState(state, options = {}) {
@@ -873,9 +923,11 @@ function openPointsScreen() {
   pointsScreen.hidden = false;
   document.body.classList.add("points-open");
   renderPoints();
+  startPointSync();
 }
 
 function closePointsScreen() {
+  stopPointSync();
   pointsScreen.hidden = true;
   document.body.classList.remove("points-open");
   if (lineTalkScreen) lineTalkScreen.hidden = false;
