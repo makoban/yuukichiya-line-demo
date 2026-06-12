@@ -26,8 +26,8 @@
 
 ブラウザ確認は公開済みデモURLで行えます。LINEリッチメニューでは以下のLIFF URLへ統一します。
 
-- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC?screen=member&v=20260613-liff-menu-unify`
-- ポイント: `https://liff.line.me/2010371637-PcIXzbgC?screen=points&v=20260613-liff-menu-unify`
-- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify`
-- 採寸履歴: `https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify`
-- クーポン: `https://liff.line.me/2010371637-PcIXzbgC?screen=coupon&v=20260613-liff-menu-unify`
+- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-liff-path-state`
+- ポイント: `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-liff-path-state`
+- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-path-state`
+- 採寸履歴: `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-path-state`
+- クーポン: `https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-liff-path-state`

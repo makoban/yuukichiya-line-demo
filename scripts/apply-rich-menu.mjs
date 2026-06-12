@@ -9,7 +9,7 @@ const allowMessagingApiRichMenu = process.env.ALLOW_MESSAGING_API_RICH_MENU === 
 const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const liffId = process.env.YUUKICHIYA_LIFF_ID || "2010371637-PcIXzbgC";
 const liffBaseUrl = (process.env.YUUKICHIYA_LIFF_BASE_URL || `https://liff.line.me/${liffId}`).replace(/\/$/, "");
-const menuVersion = process.env.YUUKICHIYA_MENU_VERSION || "20260613-liff-menu-unify";
+const menuVersion = process.env.YUUKICHIYA_MENU_VERSION || "20260613-liff-path-state";
 const memberLiffUrl = process.env.YUUKICHIYA_MEMBER_LIFF_URL || liffScreenUrl("member");
 const pointsLiffUrl = process.env.YUUKICHIYA_POINTS_LIFF_URL || liffScreenUrl("points");
 const measurementReservationUrl =
@@ -22,7 +22,7 @@ const imagePath = path.join(rootDir, "rich-menu", "yuukichiya_rich_menu_6_2500x1
 const templatePath = path.join(rootDir, "rich-menu", "rich-menu-template.json");
 
 function liffScreenUrl(screen) {
-  const url = new URL(liffBaseUrl);
+  const url = new URL(`${liffBaseUrl}/`);
   url.searchParams.set("screen", screen);
   if (menuVersion) url.searchParams.set("v", menuVersion);
   return url.href;
