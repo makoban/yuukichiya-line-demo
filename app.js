@@ -1,5 +1,6 @@
 const memberNumber = "YK-001234";
 const initialPointBalance = 1250;
+const memberStorageKey = "yuukichiya.members.v1";
 
 const avatarFiles = [
   "avatar-01-student-girl.png",
@@ -57,7 +58,8 @@ const initialMembers = [
   },
 ];
 
-let members = cloneMembers(initialMembers);
+let hasStoredMemberState = false;
+let members = readMemberState();
 let selectedId = members[0].id;
 let avatarTargetId = selectedId;
 let pointBalance = initialPointBalance;
@@ -299,6 +301,61 @@ function cloneMembers(list) {
   return list.map((member) => ({ ...member }));
 }
 
+function normalizeMemberState(value) {
+  if (!Array.isArray(value) || !value.length) return cloneMembers(initialMembers);
+
+  return value.map((member, index) => {
+    const fallback = initialMembers[index] || initialMembers[0];
+    return {
+      id: typeof member.id === "string" && member.id ? member.id : fallback.id || `m${index + 1}`,
+      dbMemberNumber: typeof member.dbMemberNumber === "string" ? member.dbMemberNumber : undefined,
+      name: typeof member.name === "string" && member.name ? member.name : fallback.name || "登録メンバー",
+      birthday: typeof member.birthday === "string" ? member.birthday : fallback.birthday || "",
+      role: typeof member.role === "string" && member.role ? member.role : fallback.role || "生徒",
+      gender: typeof member.gender === "string" && member.gender ? member.gender : fallback.gender || "未回答",
+      school: typeof member.school === "string" ? member.school : fallback.school || "",
+      phone: typeof member.phone === "string" ? member.phone : fallback.phone || "",
+      address: typeof member.address === "string" ? member.address : fallback.address || "",
+      avatar: typeof member.avatar === "string" && member.avatar ? member.avatar : fallback.avatar,
+    };
+  });
+}
+
+function readMemberState() {
+  try {
+    const saved = window.localStorage.getItem(memberStorageKey);
+    if (!saved) return cloneMembers(initialMembers);
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed) || !parsed.length) return cloneMembers(initialMembers);
+    hasStoredMemberState = true;
+    return normalizeMemberState(parsed);
+  } catch (error) {
+    console.warn("Member storage is unavailable", error);
+    return cloneMembers(initialMembers);
+  }
+}
+
+function persistMemberState() {
+  try {
+    const state = members.map((member) => ({
+      id: member.id,
+      dbMemberNumber: member.dbMemberNumber,
+      name: member.name,
+      birthday: member.birthday,
+      role: member.role,
+      gender: member.gender,
+      school: member.school,
+      phone: member.phone,
+      address: member.address,
+      avatar: member.avatar,
+    }));
+    window.localStorage.setItem(memberStorageKey, JSON.stringify(state));
+    hasStoredMemberState = true;
+  } catch (error) {
+    console.warn("Member storage write failed", error);
+  }
+}
+
 function clonePointTransactions(list) {
   return list.map((transaction) => ({ ...transaction }));
 }
@@ -417,6 +474,9 @@ async function loadDemoDataFromDatabase() {
 function applyDemoProfile(profile) {
   if (!profile || !Array.isArray(profile.members) || !profile.members.length) return;
   const previousMembers = cloneMembers(members);
+  const preferLocal = hasStoredMemberState;
+  const profileValue = (localValue, remoteValue, fallback = "") =>
+    preferLocal ? localValue || remoteValue || fallback : remoteValue || localValue || fallback;
   const fallbackAvatars = [
     "./assets/avatars/avatar-04-guardian.png",
     "./assets/avatars/avatar-01-student-girl.png",
@@ -431,13 +491,15 @@ function applyDemoProfile(profile) {
     return {
       id,
       dbMemberNumber: member.member_number,
-      name: member.member_name || previous.name || "登録メンバー",
-      birthday: member.birthday || previous.birthday || "",
+      name: profileValue(previous.name, member.member_name, "登録メンバー"),
+      birthday: profileValue(previous.birthday, member.birthday),
       role: member.member_type === "guardian" ? "代表者" : "生徒",
       gender: previous.gender || "未回答",
-      school: member.school || "",
-      address: member.address || previous.address || "",
-      avatar: previous.avatar || fallbackAvatars[index] || fallbackAvatars[0],
+      school: profileValue(previous.school, member.school),
+      address: profileValue(previous.address, member.address),
+      avatar: preferLocal
+        ? previous.avatar || member.member_avatar_url || fallbackAvatars[index] || fallbackAvatars[0]
+        : member.member_avatar_url || previous.avatar || fallbackAvatars[index] || fallbackAvatars[0],
     };
   });
   if (!members.some((member) => member.id === selectedId)) selectedId = members[0].id;
@@ -618,6 +680,7 @@ function renderAvatars() {
       member.avatar = button.dataset.src;
       selectedId = member.id;
       avatarTargetId = member.id;
+      persistMemberState();
       render();
       closeAvatarSheet();
     });
@@ -2198,6 +2261,7 @@ async function copyReservationMessageToClipboard(message) {
 
 function updateSelected(key, value) {
   selectedMember()[key] = value;
+  persistMemberState();
   renderRepresentative();
   renderMembers();
   renderAvatars();
@@ -2406,6 +2470,17 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("storage", (event) => {
+  if (event.key === memberStorageKey && event.newValue) {
+    try {
+      members = normalizeMemberState(JSON.parse(event.newValue));
+      hasStoredMemberState = true;
+      if (!members.some((member) => member.id === selectedId)) selectedId = members[0].id;
+      if (!members.some((member) => member.id === avatarTargetId)) avatarTargetId = selectedId;
+      render();
+    } catch (error) {
+      console.warn("Member storage sync failed", error);
+    }
+  }
   if (event.key === reservationStorageKey && !reservationScreen.hidden) {
     renderReservationSlots();
     renderReservationStatus();
@@ -2440,6 +2515,7 @@ photoInput.addEventListener("change", (event) => {
     member.avatar = reader.result;
     selectedId = member.id;
     avatarTargetId = member.id;
+    persistMemberState();
     render();
     closeAvatarSheet();
   };
@@ -2461,6 +2537,7 @@ addMemberButton.addEventListener("click", () => {
   };
   members.push(member);
   selectedId = member.id;
+  persistMemberState();
   render();
 });
 
