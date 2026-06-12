@@ -404,7 +404,9 @@ function reservationDisplayRows(reservation) {
 }
 
 function reservationStatusUrl(env, reservation) {
-  const targetUrl = env.PUBLIC_RESERVATION_URL || "https://liff.line.me/2010371637-PcIXzbgC";
+  const targetUrl =
+    env.PUBLIC_RESERVATION_URL ||
+    "https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify";
   try {
     const url = new URL(targetUrl);
     url.searchParams.set("reservationId", reservation.id);

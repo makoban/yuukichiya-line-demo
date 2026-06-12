@@ -24,6 +24,10 @@
 
 - https://lin.ee/7byeeeA
 
-初期デモでは、リッチメニューの「会員情報」にこのデモページURLを設定すれば見せられます。
-採寸予約は `https://makoban.github.io/yuukichiya-line-demo/?screen=reservation` で直接開けます。
-採寸履歴は `https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records` で直接開けます。
+ブラウザ確認は公開済みデモURLで行えます。LINEリッチメニューでは以下のLIFF URLへ統一します。
+
+- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC?screen=member&v=20260613-liff-menu-unify`
+- ポイント: `https://liff.line.me/2010371637-PcIXzbgC?screen=points&v=20260613-liff-menu-unify`
+- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify`
+- 採寸履歴: `https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify`
+- クーポン: `https://liff.line.me/2010371637-PcIXzbgC?screen=coupon&v=20260613-liff-menu-unify`

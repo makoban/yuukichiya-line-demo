@@ -3,8 +3,13 @@
 これは勇吉屋公式LINEのリッチメニュー起点で、会員照会・ポイント・採寸予約・採寸履歴を開くLIFF風デモです。
 
 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
-採寸予約LIFF URL: `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split`
-採寸履歴ページURL: `https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records`
+リッチメニューLIFF入口:
+
+- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC?screen=member&v=20260613-liff-menu-unify`
+- ポイント: `https://liff.line.me/2010371637-PcIXzbgC?screen=points&v=20260613-liff-menu-unify`
+- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify`
+- 採寸記録: `https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify`
+- クーポン: `https://liff.line.me/2010371637-PcIXzbgC?screen=coupon&v=20260613-liff-menu-unify`
 
 - `index.html`: LINEトーク画面 + リッチメニュー + 顧客側LIFF風画面
 - `staff.html`: 店舗側ポイント処理画面
@@ -18,7 +23,7 @@
 - `scripts/`: 予約通知などの検証用。リッチメニュー投入スクリプトは通常実行禁止
 - `worker/`: 採寸予約APIとLINE Push通知用のCloudflare Worker
 
-本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE Official Account Managerのリッチメニューから `?screen=member` / `?screen=points` / `?screen=measurement-records` / 採寸予約LIFF URLを直接開く構成にします。リッチメニューの編集元はOfficial Account Managerに統一します。
+本番化する場合は、LINE Developers側でLIFF IDを発行し、LINE Official Account Managerのリッチメニューから各 `https://liff.line.me/...?...` URLを直接開く構成にします。リッチメニューの編集元はOfficial Account Managerに統一します。
 
 ## ポイントQRデモ
 
@@ -27,7 +32,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸予約デモ
 
-最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split` で採寸予約画面を開けます。
+最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify` で採寸予約画面を開けます。
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
@@ -42,7 +47,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸履歴デモ
 
-リッチメニュー下段左、または `?screen=measurement-records` で採寸履歴ページを開けます。
+リッチメニュー下段左、または `https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify` で採寸履歴ページを開けます。
 
 - 誰が買ったか: 会員アイコンと名前で表示
 - 最新の採寸情報: メンバーごとの最新寸法を履歴欄と同じカード形式で上部に表示
@@ -56,17 +61,17 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## LINE接続
 
-`config.js` の `liffId` にLINE Developersで発行したLIFF IDを入れると、LINE内で開いた時にLIFF初期化を行います。勇吉屋公式の採寸予約は `2010371637-PcIXzbgC` を設定済みです。採寸履歴もLIFFとして本人識別する場合は、LIFF Endpoint URLをデモのベースURLにするか、採寸履歴用のLIFF IDを別途作成します。
+`config.js` の `liffId` にLINE Developersで発行したLIFF IDを入れると、LINE内で開いた時にLIFF初期化を行います。勇吉屋公式は `2010371637-PcIXzbgC` を設定済みです。リッチメニューは同じLIFF IDへ統一し、`screen` パラメータで会員情報・ポイント・採寸予約・採寸記録・クーポンを切り替えます。
 
 ```js
 window.YUUKICHIYA_LINE_CONFIG = {
   liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
-  memberPageUrl: "https://example.com/?screen=member",
-  pointsPageUrl: "https://example.com/?screen=points",
-  measurementRecordsPageUrl: "https://example.com/?screen=measurement-records",
+  memberPageUrl: "https://liff.line.me/2010371637-PcIXzbgC?screen=member&v=20260613-liff-menu-unify",
+  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC?screen=points&v=20260613-liff-menu-unify",
+  measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify",
   staffPageUrl: "https://example.com/staff.html",
-  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify",
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```

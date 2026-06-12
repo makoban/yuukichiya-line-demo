@@ -6,12 +6,12 @@
 
 | 枠 | 表示名 | タイプ | URL |
 | --- | --- | --- | --- |
-| A | 会員情報 | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=member` |
-| B | ポイント | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=points` |
-| C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?v=20260612-reservation-records-split` |
-| D | 採寸記録 | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=measurement-records` |
+| A | 会員情報 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?screen=member&v=20260613-liff-menu-unify` |
+| B | ポイント | リンク | `https://liff.line.me/2010371637-PcIXzbgC?screen=points&v=20260613-liff-menu-unify` |
+| C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?screen=reservation&v=20260613-liff-menu-unify` |
+| D | 採寸記録 | リンク | `https://liff.line.me/2010371637-PcIXzbgC?screen=measurement-records&v=20260613-liff-menu-unify` |
 | E | ECサイト | リンク | `https://makoban.github.io/yuukichiya-base-preview/?v=20260611-2` |
-| F | クーポン | リンク | `https://makoban.github.io/yuukichiya-line-demo/?screen=coupon` |
+| F | クーポン | リンク | `https://liff.line.me/2010371637-PcIXzbgC?screen=coupon&v=20260613-liff-menu-unify` |
 
 ## 横取りを避けるルール
 

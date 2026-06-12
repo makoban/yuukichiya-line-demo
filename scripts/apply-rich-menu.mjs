@@ -7,13 +7,26 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const allowMessagingApiRichMenu = process.env.ALLOW_MESSAGING_API_RICH_MENU === "1";
 const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-const baseUrl = process.env.YUUKICHIYA_BASE_URL;
-const normalizedBaseUrl = baseUrl ? baseUrl.replace(/\/$/, "") : "";
+const liffId = process.env.YUUKICHIYA_LIFF_ID || "2010371637-PcIXzbgC";
+const liffBaseUrl = (process.env.YUUKICHIYA_LIFF_BASE_URL || `https://liff.line.me/${liffId}`).replace(/\/$/, "");
+const menuVersion = process.env.YUUKICHIYA_MENU_VERSION || "20260613-liff-menu-unify";
+const memberLiffUrl = process.env.YUUKICHIYA_MEMBER_LIFF_URL || liffScreenUrl("member");
+const pointsLiffUrl = process.env.YUUKICHIYA_POINTS_LIFF_URL || liffScreenUrl("points");
 const measurementReservationUrl =
-  process.env.YUUKICHIYA_MEASUREMENT_RESERVATION_URL || `${normalizedBaseUrl}/?screen=reservation`;
+  process.env.YUUKICHIYA_MEASUREMENT_RESERVATION_URL || liffScreenUrl("reservation");
+const measurementRecordsLiffUrl =
+  process.env.YUUKICHIYA_MEASUREMENT_RECORDS_LIFF_URL || liffScreenUrl("measurement-records");
+const couponLiffUrl = process.env.YUUKICHIYA_COUPON_LIFF_URL || liffScreenUrl("coupon");
 const ecUrl = process.env.YUUKICHIYA_EC_URL;
 const imagePath = path.join(rootDir, "rich-menu", "yuukichiya_rich_menu_6_2500x1686_upload.jpg");
 const templatePath = path.join(rootDir, "rich-menu", "rich-menu-template.json");
+
+function liffScreenUrl(screen) {
+  const url = new URL(liffBaseUrl);
+  url.searchParams.set("screen", screen);
+  if (menuVersion) url.searchParams.set("v", menuVersion);
+  return url.href;
+}
 
 if (!allowMessagingApiRichMenu) {
   throw new Error(
@@ -29,18 +42,29 @@ if (!token) {
   throw new Error("LINE_CHANNEL_ACCESS_TOKEN is required.");
 }
 
-if (!baseUrl || !baseUrl.startsWith("https://")) {
-  throw new Error("YUUKICHIYA_BASE_URL must be an https URL.");
-}
-
 if (!ecUrl || !ecUrl.startsWith("https://")) {
   throw new Error("YUUKICHIYA_EC_URL must be an https URL.");
 }
 
+for (const [name, url] of Object.entries({
+  memberLiffUrl,
+  pointsLiffUrl,
+  measurementReservationUrl,
+  measurementRecordsLiffUrl,
+  couponLiffUrl,
+})) {
+  if (!url.startsWith("https://")) {
+    throw new Error(`${name} must be an https URL.`);
+  }
+}
+
 function fillTemplate(template) {
   return template
-    .replaceAll("{{BASE_URL}}", normalizedBaseUrl)
+    .replaceAll("{{MEMBER_LIFF_URL}}", memberLiffUrl)
+    .replaceAll("{{POINTS_LIFF_URL}}", pointsLiffUrl)
     .replaceAll("{{MEASUREMENT_RESERVATION_URL}}", measurementReservationUrl)
+    .replaceAll("{{MEASUREMENT_RECORDS_LIFF_URL}}", measurementRecordsLiffUrl)
+    .replaceAll("{{COUPON_LIFF_URL}}", couponLiffUrl)
     .replaceAll("{{EC_URL}}", ecUrl);
 }
 
@@ -83,4 +107,18 @@ await lineFetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
   method: "POST",
 });
 
-console.log(JSON.stringify({ richMenuId, baseUrl, measurementReservationUrl, ecUrl }, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      richMenuId,
+      memberLiffUrl,
+      pointsLiffUrl,
+      measurementReservationUrl,
+      measurementRecordsLiffUrl,
+      couponLiffUrl,
+      ecUrl,
+    },
+    null,
+    2
+  )
+);

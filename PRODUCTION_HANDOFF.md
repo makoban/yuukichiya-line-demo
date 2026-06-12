@@ -26,7 +26,7 @@
 3. `config.js` の `liffId` にLIFF IDを入れる
 4. LINE Official AccountのMessaging APIチャネルアクセストークンを用意する
 5. `worker/` の予約APIをCloudflare Workersへデプロイし、`config.js` の `reservationApiUrl` に設定する
-6. 採寸履歴をLIFF本人識別する場合は、LIFF Endpoint URLをベースURLにするか採寸履歴用LIFF IDを作成する
+6. 採寸履歴をLIFF本人識別する場合は、リッチメニューをLIFF URLに統一し、`liff.state` の `screen` で各画面へ振り分ける
 7. LINE Official Account Managerで6分割リッチメニューの各URLを設定する
 
 ## 採寸予約の本番要件
@@ -58,7 +58,7 @@
 
 ## 採寸履歴の本番要件
 
-採寸履歴ページは `https://公開したURL/?screen=measurement-records` で開く。リッチメニューの下段左は、このURLへ向ける。
+採寸履歴ページは `https://liff.line.me/LIFF_ID?screen=measurement-records` で開く。リッチメニューの下段左は、このLIFF URLへ向ける。
 
 実運用では以下を保存する。
 
@@ -83,14 +83,14 @@ GitHub Pagesを使う場合:
 
 - 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
 
-このURLをLIFF Endpoint URLに設定し、リッチメニューの「会員情報」にも設定する。
+このURLをLIFF Endpoint URLに設定し、リッチメニュー側は `https://liff.line.me/LIFF_ID?screen=...` に統一する。
 
 ## LINE側で必要な値
 
 - LIFF ID
 - Channel access token
 - 予約API URL
-- 採寸履歴を本人識別するためのLIFF Endpoint URLまたは採寸履歴用LIFF ID
+- 採寸履歴を本人識別するためのLIFF Endpoint URLと `screen` 振り分け方針
 - 採寸予約を外部サイトにする場合の実URL
 
 ECボタンはBASEデザイン確認用プレビューへ向ける:

@@ -1388,11 +1388,28 @@ function reservationApiEnabled() {
   return !isLocalPreview && typeof lineConfig.reservationApiUrl === "string" && lineConfig.reservationApiUrl.startsWith("https://");
 }
 
-function isReservationRoute() {
+function liffStateSearchParams(params = new URLSearchParams(window.location.search)) {
+  const liffState = params.get("liff.state");
+  if (!liffState) return null;
+
+  const queryStart = liffState.indexOf("?");
+  const queryText = liffState.startsWith("?")
+    ? liffState.slice(1)
+    : queryStart >= 0
+      ? liffState.slice(queryStart + 1).split("#")[0]
+      : liffState;
+
+  return new URLSearchParams(queryText);
+}
+
+function screenFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get("screen") === "reservation") return true;
-  const liffState = params.get("liff.state") || "";
-  return liffState.includes("screen=reservation");
+  const liffStateParams = liffStateSearchParams(params);
+  return liffStateParams?.get("screen") || params.get("screen") || "member";
+}
+
+function isReservationRoute() {
+  return screenFromUrl() === "reservation";
 }
 
 function shouldLoginForReservationApi() {
@@ -2542,12 +2559,7 @@ addMemberButton.addEventListener("click", () => {
 });
 
 function openInitialScreenFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const liffState = params.get("liff.state");
-  const liffStateParams = liffState
-    ? new URLSearchParams(liffState.startsWith("?") ? liffState.slice(1) : liffState)
-    : null;
-  const screen = params.get("screen") || liffStateParams?.get("screen") || "member";
+  const screen = screenFromUrl();
 
   if (screen === "points") {
     openPointsScreen();

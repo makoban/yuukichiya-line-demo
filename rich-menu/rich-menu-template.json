@@ -9,11 +9,11 @@
   "areas": [
     {
       "bounds": { "x": 0, "y": 0, "width": 833, "height": 843 },
-      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=member" }
+      "action": { "type": "uri", "uri": "{{MEMBER_LIFF_URL}}" }
     },
     {
       "bounds": { "x": 833, "y": 0, "width": 834, "height": 843 },
-      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=points" }
+      "action": { "type": "uri", "uri": "{{POINTS_LIFF_URL}}" }
     },
     {
       "bounds": { "x": 1667, "y": 0, "width": 833, "height": 843 },
@@ -21,7 +21,7 @@
     },
     {
       "bounds": { "x": 0, "y": 843, "width": 833, "height": 843 },
-      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=measurement-records" }
+      "action": { "type": "uri", "uri": "{{MEASUREMENT_RECORDS_LIFF_URL}}" }
     },
     {
       "bounds": { "x": 833, "y": 843, "width": 834, "height": 843 },
@@ -29,7 +29,7 @@
     },
     {
       "bounds": { "x": 1667, "y": 843, "width": 833, "height": 843 },
-      "action": { "type": "uri", "uri": "{{BASE_URL}}/?screen=coupon" }
+      "action": { "type": "uri", "uri": "{{COUPON_LIFF_URL}}" }
     }
   ]
 }
