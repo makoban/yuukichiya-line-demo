@@ -99,7 +99,9 @@ ECボタンはBASEデザイン確認用プレビューへ向ける:
 
 ## リッチメニュー設定方針
 
-リッチメニューはLINE Official Account Managerを正とする。`scripts/apply-rich-menu.mjs` は通常実行禁止。Messaging APIでデフォルトリッチメニューを設定すると、Official Account Manager側の編集が効かないように見えるため。
+リッチメニューはLINE Official Account Managerを正とする。A/B/C/D/FのURL差し替えはOfficial Account Managerの各タップ領域のリンクURL欄で手動実施する。これはAPI横取りではない。
+
+`scripts/apply-rich-menu.mjs` は通常実行禁止。Messaging APIでリッチメニューを作成し、全ユーザーまたは個別ユーザーへ紐付けると、Official Account Manager側の編集が効かないように見えるため。
 
 Official Account Managerに入れるURLは `OFFICIAL_ACCOUNT_MANAGER_RICH_MENU.md` を参照する。
 
