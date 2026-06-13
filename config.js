@@ -10,7 +10,7 @@ window.YUUKICHIYA_LINE_CONFIG = {
   reservationStartHour: 10,
   reservationEndHour: 18,
   measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix",
-  ecUrl: "https://makoban.github.io/yuukichiya-base-preview/?v=20260611-2",
+  ecUrl: "https://makoban.github.io/yuukichiya-base-preview/?v=20260613-brand-link",
   couponPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-line-browser-fix",
   demoApiBaseUrl: "https://yuukichiya-admin-dashboard.onrender.com/demo-api",
 };
