@@ -1,18 +1,21 @@
 # Claude Code entrypoint
 
-Read this first, then read `CLAUDE_CODE_PROJECT_SPEC.md`.
+Read this first. For the latest fixes read `HANDOFF_2026-06-13.md`; for background read `CLAUDE_CODE_PROJECT_SPEC.md`.
 
-Current status:
+Current status (updated 2026-06-13):
 
-- The Yuukichiya LINE/LIFF rich-menu issue is still unresolved on the user's real LINE app.
-- Do not assume the GitHub Pages/app code fixes are enough.
+- ROOT CAUSE FOUND AND FIXED: the rich-menu "化ける" bug was caused by the LIFF Endpoint URL being set to `https://makoban.github.io/yuukichiya-line-demo/?screen=reservation`. It must stay neutral: `https://makoban.github.io/yuukichiya-line-demo/` (no query). See `HANDOFF_2026-06-13.md` §1.
+- Browser-verified on the live LIFF URLs; final "done" still requires the owner's real-phone confirmation.
+- One manual step remains: set rich-menu E (ECサイト) link to `https://liff.line.me/2010371637-PcIXzbgC/?screen=ec`.
+- Keep the LIFF Endpoint URL neutral; re-poisoning it reintroduces the bug (LINE-app-only, invisible in normal browsers).
 - Do not run `scripts/apply-rich-menu.mjs` unless the owner explicitly chooses API-managed rich menus.
-- First verify the actual LINE Official Account Manager action URLs, LIFF endpoint settings, API default rich-menu state, and possible per-user rich-menu state.
-- Do not store LINE secrets in this repo.
+- Official Account Manager is the source of truth for the rich menu. Do not store LINE secrets in this repo.
+- When changing static files, bump the `?v=` cache-bust version in `index.html` (LINE in-app browser caches aggressively).
 
-Primary handoff/spec:
+Handoff/spec:
 
 ```text
-CLAUDE_CODE_PROJECT_SPEC.md
+HANDOFF_2026-06-13.md          (latest: this session's fixes + root cause)
+CLAUDE_CODE_PROJECT_SPEC.md    (background: product spec and original brief)
 ```
 
