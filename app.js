@@ -591,15 +591,17 @@ async function initLiff() {
     return false;
   }
 
+  const isLiffBrowser = typeof window.liff.isInClient === "function" && window.liff.isInClient();
+  if (!isLiffBrowser) {
+    liffStatus.textContent = "勇吉屋 公式LINE";
+    return false;
+  }
+
   try {
     await liff.init({ liffId: lineConfig.liffId, withLoginOnExternalBrowser: false });
     liffReady = true;
     liffInitError = null;
     if (!liff.isLoggedIn()) {
-      const isLiffBrowser = typeof liff.isInClient === "function" && liff.isInClient();
-      if (!isLiffBrowser && shouldLoginForReservationApi()) {
-        liff.login({ redirectUri: window.location.href });
-      }
       return true;
     }
     const profile = await liff.getProfile();
@@ -1444,14 +1446,6 @@ function screenFromUrl() {
   return liffStateScreen || normalizeScreenName(params.get("screen")) || "member";
 }
 
-function isReservationRoute() {
-  return screenFromUrl() === "reservation";
-}
-
-function shouldLoginForReservationApi() {
-  return reservationApiEnabled() && isReservationRoute();
-}
-
 function demoReservationSeeds() {
   const tomorrow = toDateInputValue(addDays(new Date(), 1));
   const twoDaysLater = toDateInputValue(addDays(new Date(), 2));
@@ -2274,12 +2268,7 @@ async function sendReservationLineMessage() {
   }
 
   if (!isLoggedIn) {
-    setLineSendStatus("LINEログイン確認中です。もう一度予約確定または再送を押してください。", "warning");
-    try {
-      liff.login();
-    } catch (error) {
-      console.warn("LIFF login failed", error);
-    }
+    await copyReservationMessageToClipboard("LINEログインが確認できないため、予約確認文をコピーしました。");
     return;
   }
 

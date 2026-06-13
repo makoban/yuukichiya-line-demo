@@ -9,7 +9,7 @@ const allowMessagingApiRichMenu = process.env.ALLOW_MESSAGING_API_RICH_MENU === 
 const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const liffId = process.env.YUUKICHIYA_LIFF_ID || "2010371637-PcIXzbgC";
 const liffBaseUrl = (process.env.YUUKICHIYA_LIFF_BASE_URL || `https://liff.line.me/${liffId}`).replace(/\/$/, "");
-const menuVersion = process.env.YUUKICHIYA_MENU_VERSION || "20260613-liff-login-fix";
+const menuVersion = process.env.YUUKICHIYA_MENU_VERSION || "20260613-line-browser-fix";
 const memberLiffUrl = process.env.YUUKICHIYA_MEMBER_LIFF_URL || liffScreenUrl("member");
 const pointsLiffUrl = process.env.YUUKICHIYA_POINTS_LIFF_URL || liffScreenUrl("points");
 const measurementReservationUrl =
