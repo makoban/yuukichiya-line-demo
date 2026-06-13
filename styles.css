@@ -1460,14 +1460,18 @@ textarea:focus {
 }
 
 .cancel-reservation-button {
+  grid-column: 1 / -1;
   width: 100%;
   min-height: 46px;
+  margin-top: 2px;
+  padding: 0 16px;
   border: 0;
   border-radius: 15px;
   color: #ffffff;
   background: #ef4b68;
   font-size: 15px;
   font-weight: 1000;
+  white-space: nowrap;
   box-shadow: 0 12px 24px rgba(239, 75, 104, 0.18);
 }
 
