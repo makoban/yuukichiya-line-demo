@@ -903,7 +903,7 @@ function formatCouponDate(value) {
 function renderCoupon() {
   const coupon = activeDisplayCoupon();
   if (!coupon) return;
-  couponScreenTitle.textContent = coupon.name;
+  couponScreenTitle.textContent = "勇吉屋クーポン";
   couponBenefitLabel.textContent = couponBenefitText(coupon);
   couponKicker.textContent = coupon.name;
   couponName.textContent = couponBenefitText(coupon);
@@ -1414,6 +1414,9 @@ function normalizeScreenName(value) {
     return "measurement-records";
   }
   if (screen === "coupon" || screen === "coupons") return "coupon";
+  if (screen === "ec" || screen === "ec-site" || screen === "ecsite" || screen === "shop" || screen === "store") {
+    return "ec";
+  }
   return "";
 }
 
@@ -2585,6 +2588,16 @@ addMemberButton.addEventListener("click", () => {
 
 function openInitialScreenFromUrl() {
   const screen = screenFromUrl();
+
+  if (screen === "ec") {
+    const ecUrl = typeof lineConfig.ecUrl === "string" ? lineConfig.ecUrl.trim() : "";
+    if (ecUrl) {
+      // Entered via a LIFF URL (liff.line.me/.../?screen=ec) so the EC site opens
+      // inside the LINE in-app browser; replace() keeps the back button returning to LINE.
+      window.location.replace(ecUrl);
+      return;
+    }
+  }
 
   if (screen === "points") {
     openPointsScreen();
