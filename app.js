@@ -1622,7 +1622,11 @@ function renderReservationStatus() {
     return;
   }
 
-  const reservations = reservationApiEnabled() ? myReservationCache : visibleLocalReservations();
+  // Hide past ("受付終了") reservations from the status list — the confirmation card
+  // stays in the LINE talk, so the list only needs to show upcoming reservations.
+  const reservations = (reservationApiEnabled() ? myReservationCache : visibleLocalReservations()).filter(
+    (reservation) => !isPastReservationSlot(reservation.date, Number(reservation.hour)),
+  );
   const messageHtml = myReservationsMessage
     ? `<div class="reservation-status-alert">${escapeHtml(myReservationsMessage)}</div>`
     : "";
