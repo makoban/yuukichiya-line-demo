@@ -5,11 +5,11 @@
 公開済みURL: `https://makoban.github.io/yuukichiya-line-demo/`
 リッチメニューLIFF入口:
 
-- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-liff-path-state`
-- ポイント: `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-liff-path-state`
-- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-path-state`
-- 採寸記録: `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-path-state`
-- クーポン: `https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-liff-path-state`
+- 会員情報: `https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-liff-login-fix`
+- ポイント: `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-liff-login-fix`
+- 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-login-fix`
+- 採寸記録: `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-login-fix`
+- クーポン: `https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-liff-login-fix`
 
 - `index.html`: LINEトーク画面 + リッチメニュー + 顧客側LIFF風画面
 - `staff.html`: 店舗側ポイント処理画面
@@ -32,7 +32,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸予約デモ
 
-最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-path-state` で採寸予約画面を開けます。
+最初のLINE風画面のリッチメニュー、`?screen=reservation`、または `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-login-fix` で採寸予約画面を開けます。
 
 - 予約枠は10:00-18:00の1時間単位
 - 予約済み枠は選択不可
@@ -47,7 +47,7 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 
 ## 採寸履歴デモ
 
-リッチメニュー下段左、または `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-path-state` で採寸履歴ページを開けます。
+リッチメニュー下段左、または `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-login-fix` で採寸履歴ページを開けます。
 
 - 誰が買ったか: 会員アイコンと名前で表示
 - 最新の採寸情報: メンバーごとの最新寸法を履歴欄と同じカード形式で上部に表示
@@ -67,11 +67,11 @@ QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `
 window.YUUKICHIYA_LINE_CONFIG = {
   liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
-  memberPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-liff-path-state",
-  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-liff-path-state",
-  measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-path-state",
+  memberPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-liff-login-fix",
+  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-liff-login-fix",
+  measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-liff-login-fix",
   staffPageUrl: "https://example.com/staff.html",
-  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-path-state",
+  measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-login-fix",
   reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
 };
 ```

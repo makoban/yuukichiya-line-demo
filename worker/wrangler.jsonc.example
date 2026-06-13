@@ -12,7 +12,7 @@
   ],
   "vars": {
     "ALLOWED_ORIGINS": "https://makoban.github.io",
-    "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-path-state"
+    "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-liff-login-fix"
   },
   "observability": {
     "enabled": true

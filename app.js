@@ -592,11 +592,12 @@ async function initLiff() {
   }
 
   try {
-    await liff.init({ liffId: lineConfig.liffId });
+    await liff.init({ liffId: lineConfig.liffId, withLoginOnExternalBrowser: false });
     liffReady = true;
     liffInitError = null;
     if (!liff.isLoggedIn()) {
-      if (liff.isInClient?.() || shouldLoginForReservationApi()) {
+      const isLiffBrowser = typeof liff.isInClient === "function" && liff.isInClient();
+      if (!isLiffBrowser && shouldLoginForReservationApi()) {
         liff.login({ redirectUri: window.location.href });
       }
       return true;
@@ -1402,10 +1403,45 @@ function liffStateSearchParams(params = new URLSearchParams(window.location.sear
   return new URLSearchParams(queryText);
 }
 
+function normalizeScreenName(value) {
+  const screen = String(value || "").trim().toLowerCase();
+  if (screen === "member" || screen === "members" || screen === "member-service") return "member";
+  if (screen === "point" || screen === "points") return "points";
+  if (screen === "reservation" || screen === "measurement-reservation") return "reservation";
+  if (screen === "measurement-records" || screen === "measurements" || screen === "records") {
+    return "measurement-records";
+  }
+  if (screen === "coupon" || screen === "coupons") return "coupon";
+  return "";
+}
+
+function screenFromLiffState(liffState) {
+  if (!liffState) return "";
+
+  try {
+    const url = new URL(liffState, window.location.origin);
+    const screen = normalizeScreenName(url.searchParams.get("screen"));
+    if (screen) return screen;
+    const pathScreen = normalizeScreenName(url.pathname.replace(/^\/+|\/+$/g, ""));
+    if (pathScreen) return pathScreen;
+  } catch (error) {
+    console.warn("LIFF state URL parse failed", error);
+  }
+
+  const queryStart = liffState.indexOf("?");
+  const queryText = liffState.startsWith("?")
+    ? liffState.slice(1)
+    : queryStart >= 0
+      ? liffState.slice(queryStart + 1).split("#")[0]
+      : liffState;
+
+  return normalizeScreenName(new URLSearchParams(queryText).get("screen"));
+}
+
 function screenFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const liffStateParams = liffStateSearchParams(params);
-  return liffStateParams?.get("screen") || params.get("screen") || "member";
+  const liffStateScreen = screenFromLiffState(params.get("liff.state"));
+  return liffStateScreen || normalizeScreenName(params.get("screen")) || "member";
 }
 
 function isReservationRoute() {
