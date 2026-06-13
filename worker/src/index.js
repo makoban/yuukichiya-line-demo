@@ -1,5 +1,9 @@
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://makoban.github.io",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+  "http://localhost:4174",
+  "http://127.0.0.1:4174",
   "http://localhost:4175",
   "http://127.0.0.1:4175",
 ];
@@ -7,6 +11,45 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const RESERVATION_START_HOUR = 10;
 const RESERVATION_END_HOUR = 18;
 const ALLOWED_STORES = ["本店", "高橋店"];
+const DEFAULT_POINT_STAFF_TOKEN = "demo-yuk001234";
+const SEED_POINT_MEMBER = {
+  memberNumber: "YK-001234",
+  representativeName: "山田 由美",
+  currentPoints: 1250,
+  createdAt: "2026-06-12T00:30:55.733Z",
+};
+const SEED_POINT_TRANSACTIONS = [
+  {
+    id: "demo-point-yamada-001",
+    memberNumber: "YK-001234",
+    delta: 450,
+    reason: "学生服購入",
+    staffName: "本店",
+    memo: "中学夏制服 上下セット",
+    balanceAfter: 1250,
+    createdAt: "2026-06-08T05:20:00.000Z",
+  },
+  {
+    id: "demo-point-yamada-002",
+    memberNumber: "YK-001234",
+    delta: -100,
+    reason: "補正サービス利用",
+    staffName: "本店",
+    memo: "袖丈補正サービス",
+    balanceAfter: 800,
+    createdAt: "2026-05-28T07:05:00.000Z",
+  },
+  {
+    id: "demo-point-yamada-003",
+    memberNumber: "YK-001234",
+    delta: 300,
+    reason: "紙カードから移行",
+    staffName: "高橋店",
+    memo: "既存紙カードから移行",
+    balanceAfter: 900,
+    createdAt: "2026-05-02T02:45:00.000Z",
+  },
+];
 
 export default {
   async fetch(request, env) {
@@ -16,12 +59,16 @@ export default {
     }
 
     const url = new URL(request.url);
+    const pointRoute = pointRouteFromPath(url.pathname);
     const reservationId = reservationIdFromPath(url.pathname);
-    if (url.pathname !== "/" && url.pathname !== "/reservations" && !reservationId) {
+    if (url.pathname !== "/" && url.pathname !== "/reservations" && !reservationId && !pointRoute) {
       return jsonResponse({ message: "Not found" }, 404, cors);
     }
 
     try {
+      if (pointRoute) {
+        return await handlePointRequest(request, env, cors, pointRoute);
+      }
       if (request.method === "GET") {
         if (url.searchParams.get("mine") === "1") {
           return await listMyReservations(request, env, cors);
@@ -52,7 +99,7 @@ function corsHeaders(request, env) {
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Staff-Token",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
@@ -69,9 +116,236 @@ function jsonResponse(body, status = 200, headers = {}) {
   });
 }
 
+function pointRouteFromPath(pathname) {
+  const match = pathname.match(/^\/points\/([^/]+)(?:\/(transactions))?\/?$/);
+  if (!match) return null;
+  return {
+    memberNumber: normalizeText(decodeURIComponent(match[1]), 40),
+    action: match[2] || "",
+  };
+}
+
 function reservationIdFromPath(pathname) {
   if (!pathname.startsWith("/reservations/")) return "";
   return normalizeText(decodeURIComponent(pathname.slice("/reservations/".length)), 80);
+}
+
+async function handlePointRequest(request, env, cors, route) {
+  try {
+    if (request.method === "GET" && !route.action) {
+      return await pointStateResponse(env, cors, route.memberNumber);
+    }
+    if (request.method === "POST" && route.action === "transactions") {
+      return await createPointTransaction(request, env, cors, route.memberNumber);
+    }
+    return jsonResponse({ message: "Method not allowed" }, 405, cors);
+  } catch (error) {
+    console.error("point api error", error);
+    return jsonResponse({ message: "ポイントAPIでエラーが発生しました" }, 500, cors);
+  }
+}
+
+async function ensurePointTables(env) {
+  assertDatabase(env);
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS point_members (
+      member_number TEXT PRIMARY KEY,
+      representative_name TEXT NOT NULL,
+      current_points INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
+  ).run();
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS point_transactions (
+      id TEXT PRIMARY KEY,
+      member_number TEXT NOT NULL,
+      delta INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      staff_name TEXT NOT NULL,
+      memo TEXT,
+      balance_after INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    )`,
+  ).run();
+  await env.DB.prepare(
+    `CREATE INDEX IF NOT EXISTS idx_point_transactions_member
+      ON point_transactions(member_number, created_at DESC)`,
+  ).run();
+}
+
+async function ensureSeedPointData(env, memberNumber) {
+  if (memberNumber !== SEED_POINT_MEMBER.memberNumber) return;
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO point_members (
+       member_number, representative_name, current_points, status, created_at, updated_at
+     ) VALUES (?, ?, ?, 'active', ?, ?)`,
+  )
+    .bind(
+      SEED_POINT_MEMBER.memberNumber,
+      SEED_POINT_MEMBER.representativeName,
+      SEED_POINT_MEMBER.currentPoints,
+      SEED_POINT_MEMBER.createdAt,
+      SEED_POINT_MEMBER.createdAt,
+    )
+    .run();
+
+  for (const transaction of SEED_POINT_TRANSACTIONS) {
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO point_transactions (
+         id, member_number, delta, reason, staff_name, memo, balance_after, created_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        transaction.id,
+        transaction.memberNumber,
+        transaction.delta,
+        transaction.reason,
+        transaction.staffName,
+        transaction.memo,
+        transaction.balanceAfter,
+        transaction.createdAt,
+      )
+      .run();
+  }
+}
+
+async function pointStateResponse(env, cors, memberNumber, status = 200) {
+  await ensurePointTables(env);
+  await ensureSeedPointData(env, memberNumber);
+
+  const member = await env.DB.prepare(
+    `SELECT member_number, representative_name, current_points, status, created_at, updated_at
+       FROM point_members
+      WHERE member_number = ?`,
+  )
+    .bind(memberNumber)
+    .first();
+
+  if (!member) {
+    return jsonResponse({ message: "会員が見つかりません" }, 404, cors);
+  }
+
+  const transactions = await env.DB.prepare(
+    `SELECT id, member_number, delta, reason, staff_name, memo, balance_after, created_at
+       FROM point_transactions
+      WHERE member_number = ?
+      ORDER BY created_at DESC
+      LIMIT 30`,
+  )
+    .bind(memberNumber)
+    .all();
+
+  return jsonResponse(
+    {
+      member: {
+        member_number: member.member_number,
+        representative_name: member.representative_name,
+        member_name: member.representative_name,
+        current_points: member.current_points,
+        status: member.status,
+        created_at: member.created_at,
+        updated_at: member.updated_at,
+      },
+      balance: member.current_points,
+      transactions: transactions.results || [],
+    },
+    status,
+    cors,
+  );
+}
+
+async function createPointTransaction(request, env, cors, memberNumber) {
+  await ensurePointTables(env);
+  await ensureSeedPointData(env, memberNumber);
+
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return jsonResponse({ message: "ポイント処理内容をJSONで送信してください" }, 400, cors);
+  }
+  if (!isAuthorizedPointStaff(request, env, payload)) {
+    return jsonResponse({ message: "店舗側トークンを確認できませんでした" }, 401, cors);
+  }
+
+  const delta = Number.parseInt(payload.delta, 10);
+  if (!Number.isInteger(delta) || delta === 0 || Math.abs(delta) > 100000) {
+    return jsonResponse({ message: "増減ポイントが正しくありません" }, 400, cors);
+  }
+
+  const now = new Date().toISOString();
+  let member = await env.DB.prepare(
+    `SELECT member_number, representative_name, current_points
+       FROM point_members
+      WHERE member_number = ?`,
+  )
+    .bind(memberNumber)
+    .first();
+
+  if (!member) {
+    const representativeName = normalizeText(payload.memberName, 80) || "登録会員";
+    await env.DB.prepare(
+      `INSERT INTO point_members (
+         member_number, representative_name, current_points, status, created_at, updated_at
+       ) VALUES (?, ?, 0, 'active', ?, ?)`,
+    )
+      .bind(memberNumber, representativeName, now, now)
+      .run();
+    member = { member_number: memberNumber, representative_name: representativeName, current_points: 0 };
+  }
+
+  const previousBalance = Number(member.current_points) || 0;
+  const nextBalance = Math.max(0, previousBalance + delta);
+  const actualDelta = nextBalance - previousBalance;
+  if (actualDelta === 0) {
+    return jsonResponse({ message: "現在ポイントから変更がありません" }, 400, cors);
+  }
+
+  const transaction = {
+    id: normalizeText(payload.id, 80) || `pt-${crypto.randomUUID()}`,
+    memberNumber,
+    delta: actualDelta,
+    reason: normalizeText(payload.reason, 80) || "ポイント調整",
+    staffName: normalizeText(payload.staffName || payload.staff, 80) || "本店スタッフ",
+    memo: normalizeText(payload.memo, 500),
+    balanceAfter: nextBalance,
+    createdAt: now,
+  };
+
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE point_members
+          SET current_points = ?, updated_at = ?
+        WHERE member_number = ?`,
+    ).bind(nextBalance, now, memberNumber),
+    env.DB.prepare(
+      `INSERT INTO point_transactions (
+         id, member_number, delta, reason, staff_name, memo, balance_after, created_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      transaction.id,
+      transaction.memberNumber,
+      transaction.delta,
+      transaction.reason,
+      transaction.staffName,
+      transaction.memo,
+      transaction.balanceAfter,
+      transaction.createdAt,
+    ),
+  ]);
+
+  return await pointStateResponse(env, cors, memberNumber, 201);
+}
+
+function isAuthorizedPointStaff(request, env, payload) {
+  const expected = normalizeText(env.POINT_STAFF_TOKEN || DEFAULT_POINT_STAFF_TOKEN, 200);
+  const authorization = request.headers.get("Authorization") || "";
+  const bearerToken = authorization.match(/^Bearer\s+(.+)$/i)?.[1] || "";
+  const submitted =
+    normalizeText(payload.staffToken, 200) ||
+    normalizeText(request.headers.get("X-Staff-Token"), 200) ||
+    normalizeText(bearerToken, 200);
+  return Boolean(expected && submitted && submitted === expected);
 }
 
 async function listReservations(url, env, cors) {

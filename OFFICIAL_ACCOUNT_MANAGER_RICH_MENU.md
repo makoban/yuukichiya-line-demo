@@ -7,7 +7,7 @@
 | 枠 | 表示名 | タイプ | URL |
 | --- | --- | --- | --- |
 | A | 会員情報 | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-line-browser-fix` |
-| B | ポイント | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-line-browser-fix` |
+| B | ポイント | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-point-sync` |
 | C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix` |
 | D | 採寸記録 | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix` |
 | E | ECサイト | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=ec&v=20260613-brand-link` |

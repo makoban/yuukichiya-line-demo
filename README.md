@@ -6,7 +6,7 @@
 リッチメニューLIFF入口:
 
 - 会員情報: `https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-line-browser-fix`
-- ポイント: `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-line-browser-fix`
+- ポイント: `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-point-sync`
 - 採寸予約: `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix`
 - 採寸記録: `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix`
 - クーポン: `https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-line-browser-fix`
@@ -28,7 +28,9 @@
 ## ポイントQRデモ
 
 最初のLINE風画面のリッチメニューから「ポイント」を押すと、現在ポイントと会員識別QRが大きく表示されます。
-QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `-50` などの増減を入力すると、顧客側のポイント数と履歴に即時反映され、大きなエフェクトで変化を見せます。
+QR読み取り後の店舗側デモは `staff.html` です。`+100` / `+300` / `-50` などの増減を入力すると、`config.js` の `pointApiBaseUrl` にある共有ポイントAPIへ保存し、顧客側ポイント画面が2秒間隔で再取得して別スマホにも反映します。
+
+店舗側URLにはQRから `token=demo-yuk001234` が付与されます。Worker側は `POINT_STAFF_TOKEN` 環境変数、未設定時は同じデモトークンで店舗操作を検証します。共有APIへ接続できない場合、店舗画面は「ローカルのみ」または「API未反映」と表示し、別スマホ同期済みとは表示しません。
 
 ## 採寸予約デモ
 
@@ -68,17 +70,18 @@ window.YUUKICHIYA_LINE_CONFIG = {
   liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
   memberPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-line-browser-fix",
-  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-line-browser-fix",
+  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-point-sync",
   measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix",
-  staffPageUrl: "https://example.com/staff.html",
+  staffPageUrl: "https://example.com/staff.html?v=20260613-point-sync",
   measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix",
-  reservationApiUrl: "https://example.com/api/yuukichiya/reservations"
+  reservationApiUrl: "https://example.com/api/yuukichiya/reservations",
+  pointApiBaseUrl: "https://example.com/api/yuukichiya"
 };
 ```
 
-## 予約APIとLINE Push通知
+## 予約API・ポイントAPIとLINE Push通知
 
-`worker/` にCloudflare Worker + D1用の予約APIを追加しています。デプロイ後、`config.js` の `reservationApiUrl` をWorkerの `/reservations` URLに設定します。
+`worker/` にCloudflare Worker + D1用の予約APIとポイントAPIを追加しています。デプロイ後、`config.js` の `reservationApiUrl` をWorkerの `/reservations` URLに、`pointApiBaseUrl` をWorkerのベースURLに設定します。
 
 ```bash
 cd worker
@@ -86,6 +89,7 @@ cp wrangler.jsonc.example wrangler.jsonc
 npx wrangler d1 create yuukichiya_reservations
 npx wrangler d1 execute yuukichiya_reservations --file=./schema.sql
 npx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
+npx wrangler secret put POINT_STAFF_TOKEN
 npx wrangler deploy
 ```
 
@@ -95,6 +99,11 @@ GitHub Pagesや `config.js` にLINEチャネルアクセストークンは置き
 
 - `GET /reservations?mine=1`: `Authorization: Bearer <LIFF access token>` で本人の予約一覧を返す
 - `DELETE /reservations/:id`: 同じLINEユーザーの予約だけキャンセルする
+
+ポイント:
+
+- `GET /points/:memberNumber`: 現在ポイントと直近履歴を返す
+- `POST /points/:memberNumber/transactions`: `X-Staff-Token` またはJSONの `staffToken` で店舗側を検証し、増減ポイントを保存する
 
 ## リッチメニュー設定
 

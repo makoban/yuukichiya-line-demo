@@ -454,6 +454,11 @@ function demoApiBaseUrl() {
   return base && base.startsWith("https://") ? base.replace(/\/$/, "") : "";
 }
 
+function pointApiBaseUrl() {
+  const base = String(lineConfig.pointApiBaseUrl || lineConfig.demoApiBaseUrl || "").trim();
+  return base && base.startsWith("https://") ? base.replace(/\/$/, "") : "";
+}
+
 async function loadDemoDataFromDatabase() {
   const base = demoApiBaseUrl();
   if (!base) return;
@@ -765,7 +770,7 @@ function pointStateSignature(state) {
 }
 
 async function fetchRemotePointState(options = {}) {
-  const base = demoApiBaseUrl();
+  const base = pointApiBaseUrl();
   if (!base) return;
   try {
     const response = await fetch(`${base}/points/${encodeURIComponent(memberNumber)}`, { cache: "no-store" });

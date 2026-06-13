@@ -2,8 +2,8 @@ window.YUUKICHIYA_LINE_CONFIG = {
   liffId: "2010371637-PcIXzbgC",
   officialLineUrl: "https://lin.ee/7byeeeA",
   memberPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=member&v=20260613-line-browser-fix",
-  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-line-browser-fix",
-  staffPageUrl: "https://makoban.github.io/yuukichiya-line-demo/staff.html",
+  pointsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-point-sync",
+  staffPageUrl: "https://makoban.github.io/yuukichiya-line-demo/staff.html?v=20260613-point-sync",
   measurementReservationUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix",
   reservationApiUrl: "https://yuukichiya-reservation-api.ai-fudosan.workers.dev/reservations",
   reservationStores: ["本店", "高橋店"],
@@ -12,5 +12,6 @@ window.YUUKICHIYA_LINE_CONFIG = {
   measurementRecordsPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix",
   ecUrl: "https://makoban.github.io/yuukichiya-base-preview/?v=20260613-brand-link",
   couponPageUrl: "https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-line-browser-fix",
+  pointApiBaseUrl: "https://yuukichiya-reservation-api.ai-fudosan.workers.dev",
   demoApiBaseUrl: "https://yuukichiya-admin-dashboard.onrender.com/demo-api",
 };

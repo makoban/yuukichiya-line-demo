@@ -11,7 +11,7 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGINS": "https://makoban.github.io",
+    "ALLOWED_ORIGINS": "https://makoban.github.io,http://localhost:4173,http://127.0.0.1:4173,http://localhost:4174,http://127.0.0.1:4174,http://localhost:4175,http://127.0.0.1:4175",
     "PUBLIC_RESERVATION_URL": "https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix"
   },
   "observability": {
