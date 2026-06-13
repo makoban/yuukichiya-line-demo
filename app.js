@@ -1443,10 +1443,22 @@ function screenFromLiffState(liffState) {
   return normalizeScreenName(new URLSearchParams(queryText).get("screen"));
 }
 
+function hasReservationId(params = new URLSearchParams(window.location.search)) {
+  if (params.get("reservationId")) return true;
+  const stateParams = liffStateSearchParams(params);
+  return Boolean(stateParams && stateParams.get("reservationId"));
+}
+
 function screenFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const liffStateScreen = screenFromLiffState(params.get("liff.state"));
-  return liffStateScreen || normalizeScreenName(params.get("screen")) || "member";
+  const screen = liffStateScreen || normalizeScreenName(params.get("screen"));
+  if (screen) return screen;
+  // The 予約状況確認 button always carries a reservationId. Treat its presence as a
+  // request for the reservation screen so that even older confirmation messages whose
+  // link omitted screen= land on 採寸予約 instead of falling through to the member default.
+  if (hasReservationId(params)) return "reservation";
+  return "member";
 }
 
 function demoReservationSeeds() {
