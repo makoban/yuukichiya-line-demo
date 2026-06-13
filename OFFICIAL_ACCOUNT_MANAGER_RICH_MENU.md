@@ -10,7 +10,7 @@
 | B | ポイント | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=points&v=20260613-line-browser-fix` |
 | C | 採寸予約 | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=reservation&v=20260613-line-browser-fix` |
 | D | 採寸記録 | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=measurement-records&v=20260613-line-browser-fix` |
-| E | ECサイト | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=ec` |
+| E | ECサイト | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=ec&v=20260613-brand-link` |
 | F | クーポン | リンク | `https://liff.line.me/2010371637-PcIXzbgC/?screen=coupon&v=20260613-line-browser-fix` |
 
 ## 横取りを避けるルール
@@ -24,7 +24,8 @@
 
 ## EがLINE内ブラウザで開く仕組み
 
-- E ECサイトもA-F同様にLIFF URL（`?screen=ec`）に統一した。LIFF URLはLINEアプリ内ブラウザで必ず開くため、外部ブラウザに飛ばない。
+- E ECサイトもA-F同様にLIFF URL（`?screen=ec&v=20260613-brand-link`）に統一した。LIFF URLはLINEアプリ内ブラウザで必ず開くため、外部ブラウザに飛ばない。
+- LINE内ブラウザのキャッシュが強いため、ECプレビュー側を更新したらEの `v` も更新する。
 - アプリは `screen=ec` を受け取ると `config.js` の `ecUrl`（BASEストアのプレビュー）へ転送する。転送先もmakoban.github.ioの静的ページなのでLINE内のまま表示される。
 - 注意: プレビューから本物のBASEストア（`yuukichiya.base.shop`）の購入・決済へ進むと、BASE側の仕様で外部ブラウザに切り替わることがある。これは意図された挙動。
 
