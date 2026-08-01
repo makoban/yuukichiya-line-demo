@@ -1,5 +1,9 @@
 # Claude Code entrypoint
 
+勇吉屋HP・EC・購入履歴・LINEの現行共通仕様を先に読む。LINE内の購入履歴サンプルとRender購入履歴サービスを同一視しない。
+
+`/Users/banmako/Library/CloudStorage/Dropbox-becreative/番野誠/ビークリ社内用共有/勇吉屋/YUUKICHIYA_SYSTEM_SPEC.md`
+
 Read this first. For the latest fixes read `HANDOFF_2026-06-13.md`; for background read `CLAUDE_CODE_PROJECT_SPEC.md`.
 
 Current status (updated 2026-06-13):
