@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#ffffff">
+    <title>店舗メニュー | 勇吉屋</title>
+    <link rel="icon" href="./assets/logo.jpg">
+    <link rel="stylesheet" href="./vendor/fontawesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="./vendor/fontawesome/css/solid.min.css">
+    <link rel="stylesheet" href="./staff-store.css">
+    <script type="module" src="./staff-store.js"></script>
+  </head>
+  <body>
+    <main class="store-app" id="storeApp">
+      <header class="app-header">
+        <a class="brand" href="#home" aria-label="店舗メニューのホーム">
+          <img src="./assets/logo.jpg" alt="勇吉屋" width="292" height="234">
+          <strong>勇吉屋</strong>
+        </a>
+        <span class="store-badge">店舗用</span>
+        <button class="icon-button" type="button" data-dialog="noticeDialog" aria-label="お知らせを開く">
+          <i class="fa-solid fa-bell" aria-hidden="true"></i>
+          <span class="notification-dot" aria-hidden="true"></span>
+        </button>
+      </header>
+
+      <section class="home-view app-view is-active" id="home" aria-labelledby="pageTitle">
+        <div class="title-row">
+          <div>
+            <p class="eyebrow">本店スタッフ向け</p>
+            <h1 id="pageTitle">店舗メニュー</h1>
+          </div>
+          <span class="preview-label"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>確認版</span>
+        </div>
+
+        <button class="scan-button" type="button" data-dialog="scanDialog">
+          <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+          <span>QRを読み取る</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+
+        <section class="menu-grid" aria-label="店舗の主な操作">
+          <button class="menu-card" type="button" data-dialog="reservationDialog" id="reservationLink">
+            <span class="menu-icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></span>
+            <span class="menu-label">今日の予約</span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+            <small>12件</small>
+          </button>
+          <button class="menu-card" type="button" data-dialog="memberDialog">
+            <span class="menu-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+            <span class="menu-label">会員情報</span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+            <small>氏名・電話番号で検索</small>
+          </button>
+          <button class="menu-card" type="button" data-dialog="pointDialog">
+            <span class="menu-icon"><i class="fa-solid fa-coins" aria-hidden="true"></i></span>
+            <span class="menu-label">ポイント増減</span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+            <small>確認してから反映</small>
+          </button>
+          <button class="menu-card" type="button" data-dialog="handoffDialog">
+            <span class="menu-icon"><i class="fa-solid fa-shirt" aria-hidden="true"></i></span>
+            <span class="menu-label">採寸・受け渡し</span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+            <small>本日5件</small>
+          </button>
+        </section>
+
+        <section class="status-grid" aria-label="本日の店舗端末状況">
+          <button type="button" data-view="history">
+            <span class="status-icon"><i class="fa-solid fa-rectangle-list" aria-hidden="true"></i></span>
+            <span><small>本日の操作</small><strong>18<em>件</em></strong></span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" data-dialog="syncDialog">
+            <span class="status-icon check"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></span>
+            <span><small>データ状態</small><strong class="sync-text">同期済み</strong></span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+        </section>
+      </section>
+
+      <section class="secondary-view app-view" id="history" aria-labelledby="historyTitle" hidden>
+        <div class="subpage-heading">
+          <button class="back-button" type="button" data-view="home" aria-label="店舗メニューへ戻る"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+          <div><p class="eyebrow">本店・この端末</p><h1 id="historyTitle">操作履歴</h1></div>
+        </div>
+        <p class="view-note">顧客情報は表示せず、操作の種類と担当者だけを確認できます。</p>
+        <div class="history-list" id="historyList"></div>
+      </section>
+
+      <section class="secondary-view app-view" id="settings" aria-labelledby="settingsTitle" hidden>
+        <div class="subpage-heading">
+          <button class="back-button" type="button" data-view="home" aria-label="店舗メニューへ戻る"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+          <div><p class="eyebrow">端末と店舗</p><h1 id="settingsTitle">設定</h1></div>
+        </div>
+        <div class="settings-list">
+          <button type="button" data-dialog="storeDialog"><span><i class="fa-solid fa-store" aria-hidden="true"></i><b>利用店舗</b><small>本店</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" data-dialog="deviceDialog"><span><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><b>この端末</b><small>本店-01</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" data-dialog="supportDialog"><span><i class="fa-solid fa-circle-question" aria-hidden="true"></i><b>困ったとき</b><small>操作方法と連絡先</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+        <p class="prototype-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>この確認版は本番データを変更しません。</p>
+      </section>
+
+      <nav class="bottom-nav" aria-label="店舗メニュー">
+        <button type="button" data-view="home" class="is-active" aria-current="page"><i class="fa-solid fa-house" aria-hidden="true"></i><span>ホーム</span></button>
+        <button type="button" data-view="history"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>履歴</span></button>
+        <button type="button" data-view="settings"><i class="fa-solid fa-gear" aria-hidden="true"></i><span>設定</span></button>
+      </nav>
+    </main>
+
+    <dialog id="scanDialog" aria-labelledby="scanTitle">
+      <form method="dialog" class="dialog-card">
+        <header><div><span>会員証</span><h2 id="scanTitle">QRを読み取る</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="scanner-preview" aria-hidden="true"><i class="fa-solid fa-qrcode"></i><span>枠内に会員証を合わせます</span></div>
+        <p>本番ではボタンを押したあとにカメラ許可を求め、読み取り結果を会員情報照会へ渡します。</p>
+        <button type="button" class="primary-action" id="simulateScan"><i class="fa-solid fa-camera" aria-hidden="true"></i>確認用QRを読み取る</button>
+      </form>
+    </dialog>
+
+    <dialog id="memberDialog" aria-labelledby="memberTitle">
+      <form method="dialog" class="dialog-card" id="memberSearchForm">
+        <header><div><span>会員情報</span><h2 id="memberTitle">会員を検索</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <label class="field-label" for="memberQuery">氏名・電話番号・会員番号</label>
+        <div class="search-row"><input id="memberQuery" type="search" placeholder="例：山田" autocomplete="off"><button type="button" id="memberSearchButton" aria-label="検索"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button></div>
+        <div class="member-result" id="memberResult" hidden><span class="member-avatar"><i class="fa-solid fa-user" aria-hidden="true"></i></span><div><strong>山田 ○○ 様</strong><small>会員番号：YK-••••-2486</small><small>保有ポイント：1,280pt</small></div><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></div>
+        <p class="dialog-hint">確認版のため、表示内容はサンプルです。</p>
+      </form>
+    </dialog>
+
+    <dialog id="pointDialog" aria-labelledby="pointTitle">
+      <form method="dialog" class="dialog-card" id="pointForm">
+        <header><div><span>ポイント</span><h2 id="pointTitle">ポイントを増減</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <p class="selection-required"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>先にQR読取または会員検索で対象者を選択します。</p>
+        <fieldset><legend>操作</legend><div class="segment-control"><label><input type="radio" name="pointMode" value="add" checked><span><i class="fa-solid fa-plus" aria-hidden="true"></i>付与</span></label><label><input type="radio" name="pointMode" value="subtract"><span><i class="fa-solid fa-minus" aria-hidden="true"></i>利用</span></label></div></fieldset>
+        <label class="field-label" for="pointAmount">ポイント数</label><input id="pointAmount" type="number" inputmode="numeric" min="1" max="99999" value="50">
+        <label class="field-label" for="pointReason">理由</label><select id="pointReason"><option>店頭購入</option><option>キャンペーン</option><option>訂正</option></select>
+        <button type="button" class="primary-action" id="simulatePoint">確認画面へ</button>
+        <p class="dialog-hint">実際のポイントは変更されません。</p>
+      </form>
+    </dialog>
+
+    <dialog id="handoffDialog" aria-labelledby="handoffTitle">
+      <form method="dialog" class="dialog-card">
+        <header><div><span>店舗業務</span><h2 id="handoffTitle">採寸・受け渡し</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="task-summary"><div><i class="fa-solid fa-ruler" aria-hidden="true"></i><span><strong>採寸待ち</strong><b>2件</b></span></div><div><i class="fa-solid fa-box" aria-hidden="true"></i><span><strong>受け渡し待ち</strong><b>3件</b></span></div></div>
+        <button class="primary-action" type="button" id="previewReservationButton">今日の予約から確認</button>
+      </form>
+    </dialog>
+
+    <dialog id="reservationDialog" aria-labelledby="reservationTitle">
+      <form method="dialog" class="dialog-card">
+        <header><div><span>本店</span><h2 id="reservationTitle">今日の予約</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="task-summary"><div><i class="fa-solid fa-calendar-check" aria-hidden="true"></i><span><strong>予約</strong><b>12件</b></span></div><div><i class="fa-solid fa-ruler" aria-hidden="true"></i><span><strong>採寸待ち</strong><b>2件</b></span></div></div>
+        <p>外部確認版では、実際のお客様名や予約時刻は表示しません。</p>
+        <button class="primary-action" type="button" id="previewReservationListButton">予約一覧の操作を確認</button>
+      </form>
+    </dialog>
+
+    <dialog id="noticeDialog" aria-labelledby="noticeTitle"><form method="dialog" class="dialog-card compact-dialog"><header><div><span>お知らせ</span><h2 id="noticeTitle">本日の連絡</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><p class="notice-item"><b>10:00</b><span>予約表は最新の状態です。</span></p><p class="notice-item"><b>9月24日</b><span>システムメンテナンス予定</span></p></form></dialog>
+    <dialog id="syncDialog" aria-labelledby="syncTitle"><form method="dialog" class="dialog-card compact-dialog"><header><div><span>データ状態</span><h2 id="syncTitle">同期済みです</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><p>最終確認：たった今</p><p class="dialog-hint">本番では通信状態と未送信操作の有無を表示します。</p></form></dialog>
+    <dialog id="storeDialog"><form method="dialog" class="dialog-card compact-dialog"><header><div><span>利用店舗</span><h2>本店</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><p>端末は本店用として登録されています。</p></form></dialog>
+    <dialog id="deviceDialog"><form method="dialog" class="dialog-card compact-dialog"><header><div><span>端末情報</span><h2>本店-01</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><p>最終同期：たった今<br>状態：正常</p></form></dialog>
+    <dialog id="supportDialog"><form method="dialog" class="dialog-card compact-dialog"><header><div><span>サポート</span><h2>困ったとき</h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><p>画面を閉じて開き直しても解決しない場合は、端末名「本店-01」と発生時刻を管理者へ伝えてください。</p></form></dialog>
+    <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+  </body>
+</html>
