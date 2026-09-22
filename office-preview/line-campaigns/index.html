@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#078b43">
+    <title>LINE配信管理 | 勇吉屋</title>
+    <link rel="icon" href="../../store-preview/assets/logo.jpg">
+    <link rel="stylesheet" href="../../store-preview/vendor/fontawesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../../store-preview/vendor/fontawesome/css/solid.min.css">
+    <link rel="stylesheet" href="./staff-campaigns.css">
+    <script type="module" src="./staff-campaigns.js"></script>
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="side-panel" aria-label="事務所管理メニュー">
+        <div class="side-brand">
+          <img src="../../store-preview/assets/logo.jpg" alt="勇吉屋" width="292" height="234">
+          <div><strong>勇吉屋</strong><span>事務所管理システム</span></div>
+        </div>
+        <nav class="side-nav">
+          <a href="../"><i class="fa-solid fa-house" aria-hidden="true"></i><span>トップ</span></a>
+          <a href="#"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>予約</span></a>
+          <a href="#"><i class="fa-solid fa-user-group" aria-hidden="true"></i><span>会員検索</span></a>
+          <a href="#"><i class="fa-solid fa-coins" aria-hidden="true"></i><span>ポイント</span></a>
+          <a href="#"><i class="fa-solid fa-ticket" aria-hidden="true"></i><span>クーポン</span></a>
+          <a href="#campaignComposer" class="active" aria-current="page"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>LINE配信</span></a>
+          <a href="#"><i class="fa-solid fa-gear" aria-hidden="true"></i><span>管理</span></a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">事務所スタッフ向け</p>
+            <h1>LINE配信管理</h1>
+            <p>会員条件に合うご家庭へ、販促LINEを作成・予約できます。</p>
+          </div>
+          <div class="header-actions">
+            <div class="status-pill"><span></span><div><strong>確認画面</strong><small>実際のLINEには送信されません</small></div></div>
+            <button type="button" class="quiet-button" id="resetDemoButton"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>確認データを戻す</button>
+          </div>
+        </header>
+
+        <section class="prototype-banner" aria-label="確認画面の注意">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <div><strong>安全な確認用画面です</strong><p>人数・料金・キュー操作はサンプルデータで動きます。本番配信APIには接続していません。</p></div>
+        </section>
+
+        <section class="stepper" aria-label="配信作成の手順">
+          <button type="button" class="step is-active" data-step="1" aria-current="step"><b>1</b><span><strong>配信対象</strong><small>会員条件を絞り込み</small></span></button>
+          <button type="button" class="step" data-step="2"><b>2</b><span><strong>内容と日時</strong><small>文章と配信日時を設定</small></span></button>
+          <button type="button" class="step" data-step="3"><b>3</b><span><strong>確認</strong><small>内容を確認して予定保存</small></span></button>
+        </section>
+
+        <section class="composer-layout" id="campaignComposer">
+          <form class="composer-panel" id="campaignForm">
+            <section class="form-step" data-panel="1">
+              <div class="section-heading">
+                <div><h2>配信対象の条件設定</h2><p>同じ項目内は「いずれか」、異なる項目は「すべて一致」で絞り込みます。</p></div>
+                <span class="logic-badge">AND</span>
+              </div>
+
+              <div class="condition-list" id="conditionList">
+                <div class="condition-row" data-condition="school">
+                  <label for="schoolCondition">学校</label>
+                  <select id="schoolCondition">
+                    <option value="toyota-junior">豊田市立中学校</option>
+                    <option value="josui-junior">浄水中学校</option>
+                    <option value="umetsubo-elementary">梅坪小学校</option>
+                    <option value="takahashi-junior">高橋中学校</option>
+                    <option value="all">すべての学校</option>
+                  </select>
+                  <button type="button" class="remove-condition" data-remove-condition="school" aria-label="学校条件を削除"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>削除</span></button>
+                </div>
+                <div class="condition-row" data-condition="grade">
+                  <label for="gradeCondition">学年</label>
+                  <select id="gradeCondition">
+                    <option value="junior-1">中学1年</option>
+                    <option value="junior-2">中学2年</option>
+                    <option value="junior-3">中学3年</option>
+                    <option value="elementary-6">小学6年</option>
+                    <option value="all">すべての学年</option>
+                  </select>
+                  <button type="button" class="remove-condition" data-remove-condition="grade" aria-label="学年条件を削除"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>削除</span></button>
+                </div>
+                <div class="condition-row" data-condition="reservation">
+                  <label for="reservationCondition">予約状況</label>
+                  <select id="reservationCondition">
+                    <option value="none">今後の予約なし</option>
+                    <option value="upcoming">今後の予約あり</option>
+                    <option value="past">過去に予約あり</option>
+                    <option value="all">指定しない</option>
+                  </select>
+                  <button type="button" class="remove-condition" data-remove-condition="reservation" aria-label="予約条件を削除"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>削除</span></button>
+                </div>
+                <div class="condition-row" data-condition="registered" hidden>
+                  <label for="registeredCondition">会員登録</label>
+                  <select id="registeredCondition">
+                    <option value="90">90日以内</option>
+                    <option value="180">180日以内</option>
+                    <option value="365">1年以内</option>
+                    <option value="all">指定しない</option>
+                  </select>
+                  <button type="button" class="remove-condition" data-remove-condition="registered" aria-label="会員登録条件を削除"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>削除</span></button>
+                </div>
+                <div class="condition-row" data-condition="measurement" hidden>
+                  <label for="measurementCondition">採寸履歴</label>
+                  <select id="measurementCondition">
+                    <option value="none">採寸記録なし</option>
+                    <option value="recent">1年以内に採寸あり</option>
+                    <option value="old">1年以上前に採寸あり</option>
+                    <option value="all">指定しない</option>
+                  </select>
+                  <button type="button" class="remove-condition" data-remove-condition="measurement" aria-label="採寸履歴条件を削除"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>削除</span></button>
+                </div>
+              </div>
+
+              <div class="add-condition-row">
+                <select id="conditionType" aria-label="追加する条件">
+                  <option value="registered">会員登録日</option>
+                  <option value="measurement">採寸履歴</option>
+                </select>
+                <button type="button" class="outline-button" id="addConditionButton"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i>条件を追加</button>
+              </div>
+              <div class="rule-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><p>学校と学年は、同じお子さまが両方の条件に合う場合だけ対象になります。兄弟が複数いても1世帯へ1通です。</p></div>
+            </section>
+
+            <section class="form-step" data-panel="2" hidden>
+              <div class="section-heading"><div><h2>メッセージ内容と配信日時</h2><p>受け取る方に伝わる短い文章と、送る日時を設定します。</p></div></div>
+              <div class="field-stack">
+                <label for="campaignTitle">管理用タイトル<span>必須</span></label>
+                <input id="campaignTitle" type="text" value="新入学準備フェア" maxlength="50" required>
+                <label for="messageBody">LINE本文<span>必須</span></label>
+                <textarea id="messageBody" rows="6" maxlength="500" required>こんにちは、勇吉屋です。新入学に向けた制服・体操服の準備フェアを開催します。対象商品や採寸予約について、詳しくは下の案内をご確認ください。</textarea>
+                <label for="messageLink">案内リンク</label>
+                <input id="messageLink" type="url" value="https://www.yuukichi-ya.com/" inputmode="url">
+                <div class="date-time-grid">
+                  <label for="scheduledDate">送信予定日<input id="scheduledDate" type="date" value="2026-09-24" required></label>
+                  <label for="scheduledTime">送信予定時刻<input id="scheduledTime" type="time" value="10:00" required></label>
+                </div>
+                <p class="field-message" id="scheduleHint" role="status" aria-live="polite"></p>
+              </div>
+            </section>
+
+            <section class="form-step" data-panel="3" hidden>
+              <div class="section-heading"><div><h2>配信予定の最終確認</h2><p>対象・内容・日時を確認してキューへ保存します。この操作ではまだ送信されません。</p></div></div>
+              <dl class="review-list">
+                <div><dt>管理用タイトル</dt><dd id="reviewTitle"></dd></div>
+                <div><dt>配信条件</dt><dd id="reviewConditions"></dd></div>
+                <div><dt>送信予定日時</dt><dd id="reviewSchedule"></dd></div>
+                <div><dt>送信予定数</dt><dd id="reviewRecipients"></dd></div>
+                <div><dt>LINE費用（概算）</dt><dd id="reviewCost"></dd></div>
+              </dl>
+              <article class="message-preview">
+                <span>受信画面の確認</span>
+                <strong id="previewTitle"></strong>
+                <p id="previewBody"></p>
+                <a id="previewLink" href="#" tabindex="-1">詳しく見る</a>
+              </article>
+            </section>
+          </form>
+
+          <aside class="estimate-panel" aria-live="polite">
+            <h2>対象人数の見込み</h2>
+            <div class="estimate-grid">
+              <div><i class="fa-solid fa-user-group" aria-hidden="true"></i><span>該当する子ども</span><strong id="childCount">142人</strong></div>
+              <div><i class="fa-solid fa-house" aria-hidden="true"></i><span>送信予定</span><strong id="householdCount">126世帯</strong></div>
+              <div><i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>配信見込み</span><strong id="deliveryCount">118通</strong></div>
+              <div><i class="fa-solid fa-yen-sign" aria-hidden="true"></i><span>LINE費用（概算）</span><strong id="costEstimate">0円</strong></div>
+            </div>
+            <div class="scheduled-summary"><span>送信予定日時</span><strong id="scheduleSummary">2026年9月24日（木）10:00</strong></div>
+            <p class="quota-state" id="quotaState"><i class="fa-solid fa-gift" aria-hidden="true"></i>月間無料枠内</p>
+            <details class="cost-settings">
+              <summary>料金計算の確認用設定</summary>
+              <div>
+                <label for="remainingQuota">当月の残り配信枠<input id="remainingQuota" type="number" min="0" max="1000000" value="200"><span>通</span></label>
+                <label for="unitCost">追加1通あたり<input id="unitCost" type="number" min="0" max="100" step="0.01" value="3.30"><span>円</span></label>
+              </div>
+              <p>正式版では契約プランと当月利用数をLINEから取得して計算します。</p>
+            </details>
+            <button type="button" class="primary-button" id="primaryActionButton"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span>内容と日時へ</span></button>
+            <button type="button" class="back-button" id="backStepButton" hidden>前の手順へ戻る</button>
+          </aside>
+        </section>
+
+        <section class="queue-section" aria-labelledby="queueTitle">
+          <div class="queue-header">
+            <div><h2 id="queueTitle">週間タイムライン</h2><p>配信予定の間隔や重なりを見ながら、すぐに操作できます。</p></div>
+            <div class="week-controls">
+              <button type="button" id="previousWeek" aria-label="前の週"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+              <strong id="weekLabel"></strong>
+              <button type="button" id="nextWeek" aria-label="次の週"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+              <button type="button" id="thisWeekButton">今週</button>
+            </div>
+          </div>
+          <div class="timeline" id="timeline" role="list" aria-label="LINE配信予定"></div>
+          <article class="selected-campaign" id="selectedCampaign" aria-live="polite"></article>
+          <p class="empty-queue" id="emptyQueue" hidden>この週の配信予定はありません。</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="sendDialog" aria-labelledby="sendDialogTitle">
+      <form method="dialog" id="sendForm">
+        <header><div><span class="danger-label">外部送信の確認</span><h2 id="sendDialogTitle">今すぐ送りますか？</h2></div><button type="button" class="dialog-close" data-close-dialog="sendDialog" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="dialog-summary" id="sendDialogSummary"></div>
+        <p class="prototype-dialog-note">この確認画面では実LINEへは送られず、状態だけが「送信済み」に変わります。</p>
+        <label class="confirm-check"><input id="sendConfirmation" type="checkbox" required><span>対象人数・内容・費用を確認しました</span></label>
+        <div class="dialog-actions"><button type="button" class="quiet-button" data-close-dialog="sendDialog">戻る</button><button type="submit" class="danger-button" id="confirmSendButton" disabled>確認用として送信済みにする</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="deleteDialog" aria-labelledby="deleteDialogTitle">
+      <form method="dialog" id="deleteForm">
+        <header><div><span class="danger-label">予定の削除</span><h2 id="deleteDialogTitle">この配信予定を削除しますか？</h2></div><button type="button" class="dialog-close" data-close-dialog="deleteDialog" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <div class="dialog-summary" id="deleteDialogSummary"></div>
+        <p>確認用キューから削除します。実際のLINE配信データには影響しません。</p>
+        <div class="dialog-actions"><button type="button" class="quiet-button" data-close-dialog="deleteDialog">戻る</button><button type="submit" class="danger-button">削除する</button></div>
+      </form>
+    </dialog>
+    <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+  </body>
+</html>

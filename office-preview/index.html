@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#078b43">
+    <title>事務所管理 | 勇吉屋</title>
+    <link rel="icon" href="../store-preview/assets/logo.jpg">
+    <link rel="stylesheet" href="../store-preview/vendor/fontawesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../store-preview/vendor/fontawesome/css/solid.min.css">
+    <link rel="stylesheet" href="./office.css">
+    <script type="module" src="./office.js"></script>
+  </head>
+  <body>
+    <div class="office-shell">
+      <aside class="side-panel" aria-label="事務所管理メニュー">
+        <a class="side-brand" href="#top" aria-label="事務所管理のトップ">
+          <img src="../store-preview/assets/logo.jpg" alt="勇吉屋" width="292" height="234">
+          <span><strong>勇吉屋</strong><small>事務所管理システム</small></span>
+        </a>
+
+        <nav class="side-nav">
+          <a class="active" href="#top" aria-current="page"><i class="fa-solid fa-house" aria-hidden="true"></i><span>トップ</span></a>
+          <a href="../store-preview/"><i class="fa-solid fa-store" aria-hidden="true"></i><span>店舗業務</span></a>
+          <button type="button" data-module="customers"><i class="fa-solid fa-user-group" aria-hidden="true"></i><span>顧客</span></button>
+          <a href="./line-campaigns/"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>配信</span></a>
+          <button type="button" data-module="sales"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span>売上</span></button>
+          <button type="button" data-module="logs"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i><span>操作ログ</span></button>
+          <button type="button" data-module="settings"><i class="fa-solid fa-gear" aria-hidden="true"></i><span>設定</span></button>
+        </nav>
+
+        <div class="preview-note">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <span><strong>確認版</strong><small>すべてサンプルデータです</small></span>
+        </div>
+      </aside>
+
+      <main class="main-content" id="top">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">事務所スタッフ向け</p>
+            <h1>事務所管理</h1>
+            <p>店舗の状況を把握し、業務ごとに管理できます。</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" data-module="store"><i class="fa-solid fa-store" aria-hidden="true"></i><span>本店</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+            <button type="button" data-module="account"><i class="fa-solid fa-user" aria-hidden="true"></i><span>管理者</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="本日の状況">
+          <button type="button" class="summary-card" data-module="reservations">
+            <span class="summary-icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></span>
+            <span class="summary-copy"><small>本日の予約</small><strong>12<span>件</span></strong></span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="summary-card" data-module="customers">
+            <span class="summary-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+            <span class="summary-copy"><small>登録会員</small><strong>2,486<span>人</span></strong></span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="summary-card" data-module="sales">
+            <span class="summary-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+            <span class="summary-copy"><small>今月の売上</small><strong class="sales-value">¥3,842,600</strong></span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="summary-card attention" data-module="attention">
+            <span class="summary-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+            <span class="summary-copy"><small>確認が必要</small><strong>3<span>件</span></strong></span>
+            <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+          </button>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel menu-panel" aria-labelledby="menuTitle">
+            <div class="section-heading">
+              <div><h2 id="menuTitle">メインメニュー</h2><p>業務ごとにメニューを選択して管理できます。</p></div>
+            </div>
+            <div class="function-grid">
+              <button type="button" class="function-card" data-module="reservations">
+                <span class="function-icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></span>
+                <span><strong>予約・採寸管理</strong><small>予約の確認、採寸、受け渡しを管理します。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="function-card" data-module="customers">
+                <span class="function-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+                <span><strong>会員・顧客管理</strong><small>会員情報の検索・編集と家族情報を確認できます。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="function-card" data-module="points">
+                <span class="function-icon"><i class="fa-solid fa-coins" aria-hidden="true"></i></span>
+                <span><strong>ポイント管理</strong><small>ポイントの付与・使用・調整履歴を確認できます。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </button>
+              <a class="function-card featured" href="./line-campaigns/">
+                <span class="function-icon"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></span>
+                <span><strong>LINE配信管理</strong><small>会員条件、予定日時、人数、費用、配信キューを管理します。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </a>
+              <button type="button" class="function-card" data-module="sales">
+                <span class="function-icon"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+                <span><strong>売上管理</strong><small>売上の集計・分析と月次・店舗別の状況を確認します。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="function-card" data-module="logs">
+                <span class="function-icon"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i></span>
+                <span><strong>店舗端末ログ</strong><small>QR読取、会員照会、ポイント変更などを確認します。</small></span>
+                <i class="fa-solid fa-chevron-right card-arrow" aria-hidden="true"></i>
+              </button>
+            </div>
+          </section>
+
+          <div class="activity-column">
+            <section class="panel activity-panel" aria-labelledby="activityTitle">
+              <div class="section-heading compact"><h2 id="activityTitle">最近の操作</h2><button type="button" data-module="logs">すべて見る <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
+              <div class="activity-list">
+                <div class="activity-row"><span class="activity-icon"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></span><time>10:24</time><span><strong>QR読取</strong><small>本店</small></span><b>山田</b></div>
+                <div class="activity-row"><span class="activity-icon amber"><i class="fa-solid fa-coins" aria-hidden="true"></i></span><time>10:18</time><span><strong>ポイント +50</strong><small>本店</small></span><b>佐藤</b></div>
+                <div class="activity-row"><span class="activity-icon"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span><time>09:55</time><span><strong>会員照会</strong><small>本店</small></span><b>山田</b></div>
+              </div>
+            </section>
+
+            <section class="panel device-panel" aria-labelledby="deviceTitle">
+              <div class="section-heading compact"><div><h2 id="deviceTitle">店舗端末ログ</h2><p>最近の操作</p></div><button type="button" data-module="logs">すべて見る <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
+              <div class="device-list" role="table" aria-label="店舗端末ログ">
+                <div class="device-head" role="row"><span role="columnheader">時刻</span><span role="columnheader">操作内容</span><span role="columnheader">端末名</span><span role="columnheader">担当者</span></div>
+                <div class="device-row" role="row"><time role="cell">10:24</time><strong role="cell">QR読取<small>本店-01・山田</small></strong><span role="cell">本店-01</span><span role="cell">山田</span></div>
+                <div class="device-row" role="row"><time role="cell">10:18</time><strong role="cell">ポイント変更<small>本店-02・佐藤</small></strong><span role="cell">本店-02</span><span role="cell">佐藤</span></div>
+                <div class="device-row" role="row"><time role="cell">09:55</time><strong role="cell">会員照会<small>本店-01・山田</small></strong><span role="cell">本店-01</span><span role="cell">山田</span></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section class="notice-bar" aria-label="お知らせ">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i><strong>お知らせ</strong><span>9月24日（木）10:00よりシステムメンテナンスを実施します。</span><button type="button" data-module="notice">すべて見る <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="moduleDialog" aria-labelledby="moduleTitle">
+      <form method="dialog" class="dialog-card">
+        <header><div><span>確認用メニュー</span><h2 id="moduleTitle"></h2></div><button type="submit" class="dialog-close" aria-label="閉じる"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+        <p id="moduleDescription"></p>
+        <div class="dialog-note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>この画面はサンプルデータの確認版です。本番DBや外部サービスには接続していません。</span></div>
+        <button type="submit" class="primary-button">確認しました</button>
+      </form>
+    </dialog>
+  </body>
+</html>
